@@ -42,3 +42,21 @@ def plot_stage_convergence(stage_labels: list[str], residual_norms: np.ndarray, 
     ax.set_title(title)
     ax.grid(alpha=0.3)
     plt.tight_layout()
+
+
+def plot_model_gap(time: np.ndarray, absolute_gap: np.ndarray, relative_gap: np.ndarray, title: str = "RF3BP vs CR3BP Acceleration Gap") -> None:
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8.5, 6.4), sharex=True)
+
+    ax1.plot(time, absolute_gap, color="#ae2012", lw=1.5)
+    ax1.set_yscale("log")
+    ax1.set_ylabel(r"$\|a_{RF3BP} - a_{CR3BP}\|$")
+    ax1.grid(alpha=0.25)
+    ax1.set_title(title)
+
+    ax2.plot(time, relative_gap, color="#005f73", lw=1.5)
+    ax2.set_yscale("log")
+    ax2.set_xlabel("t")
+    ax2.set_ylabel(r"$\|\Delta a\| / \|a_{CR3BP}\|$")
+    ax2.grid(alpha=0.25)
+
+    plt.tight_layout()

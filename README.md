@@ -231,14 +231,9 @@ sequenceDiagram
 
 ## Practical Notes
 
-> [!WARNING]
-> The current continuation solver is designed to be fast and inspectable for research iteration. It is not yet a production-grade orbit corrector.
-
-> [!NOTE]
-> The reported final residual in the demo is a diagnostic value from the current simplified bounded-orbit correction. Treat it as an indicator for further improvement, not a proof of strict periodicity.
-
-> [!TIP]
-> If you start exploring new seeds, begin by adjusting the seed state and only then increase fidelity. Jumping straight into the full model is the fastest way to waste compute.
+- WARNING: The current continuation solver is designed to be fast and inspectable for research iteration. It is not yet a production-grade orbit corrector.
+- NOTE: The reported final residual in the demo is a diagnostic value from the current simplified bounded-orbit correction. Treat it as an indicator for further improvement, not a proof of strict periodicity.
+- TIP: If you start exploring new seeds, begin by adjusting the seed state and only then increase fidelity. Jumping straight into the full model is the fastest way to waste compute.
 
 ## Development Commands
 
@@ -278,9 +273,21 @@ sequenceDiagram
 
 ## References and Context
 
-- AIAA Journal of Guidance, Control, and Dynamics paper from the original request: abstract-level inspiration only in this environment
-- Standard CR3BP equations in a rotating frame
-- Standard numerical continuation and differential correction ideas from astrodynamics practice
+The model and algorithms in this lab are anchored to real literature. Most links below use DOI resolver URLs so they remain stable even when publisher front-ends change.
+
+| Topic | Reference | What It Supports in This Repo |
+| --- | --- | --- |
+| RF3BP near binary asteroids (primary inspiration) | Lu, J., Shang, H., Liu, C., Zhang, X., Gao, A. (2026). General Dynamics of Restricted Full Three-Body Problem Near Binary Asteroid System. *Journal of Guidance, Control, and Dynamics*. [https://doi.org/10.2514/1.G009686](https://doi.org/10.2514/1.G009686) | Pulsating-rotating RF3BP framing, perturbation hierarchy, and continuation motivation |
+| Moshup-Squannit physical system observations | Ostro, S. J., Margot, J.-L., Benner, L. A. M., et al. (2006). Radar Imaging of Binary Near-Earth Asteroid (66391) 1999 KW4. *Science*, 314(5803), 1276-1280. [https://doi.org/10.1126/science.1133622](https://doi.org/10.1126/science.1133622) | Binary geometry context and observed KW4 dynamical characteristics |
+| Binary asteroid full-problem dynamics | Fahnestock, E. G., Scheeres, D. J. (2008). Simulation and analysis of the dynamics of binary near-Earth asteroid (66391) 1999 KW4. *Icarus*, 194(2), 410-435. [https://doi.org/10.1016/j.icarus.2007.11.007](https://doi.org/10.1016/j.icarus.2007.11.007) | Small-body binary dynamics baseline and comparable perturbation scales |
+| Full two-body stability theory | Scheeres, D. J. (2009). Stability of the planar full 2-body problem. *Celestial Mechanics and Dynamical Astronomy*, 104, 103-128. [https://doi.org/10.1007/s10569-009-9184-7](https://doi.org/10.1007/s10569-009-9184-7) | Conceptual bridge between restricted and full-body stability behavior |
+| CR3BP mission-design continuation practice | Koon, W. S., Lo, M. W., Marsden, J. E., Ross, S. D. (2001). Low Energy Transfer to the Moon. *Celestial Mechanics and Dynamical Astronomy*, 81, 63-73. [https://doi.org/10.1023/A:1013359120468](https://doi.org/10.1023/A:1013359120468) | Continuation and shooting-style trajectory construction mindset |
+| Foundational CR3BP text | Szebehely, V. (1967). *Theory of Orbits: The Restricted Problem of Three Bodies*. Academic Press. (Book cited in many modern CR3BP papers; review DOI: [https://doi.org/10.1119/1.1974535](https://doi.org/10.1119/1.1974535)) | Canonical rotating-frame CR3BP equations and integrals |
+| Numerical integration basis (embedded RK) | Dormand, J. R., Prince, P. J. (1980). A family of embedded Runge-Kutta formulae. *Journal of Computational and Applied Mathematics*, 6(1), 19-26. [https://doi.org/10.1016/0771-050X(80)90013-3](https://doi.org/10.1016/0771-050X(80)90013-3) | The accuracy-control lineage behind high-order RK propagation choices |
+| Software stack reference (SciPy) | Virtanen, P., Gommers, R., Oliphant, T. E., et al. (2020). SciPy 1.0: fundamental algorithms for scientific computing in Python. *Nature Methods*, 17, 261-272. [https://doi.org/10.1038/s41592-019-0686-2](https://doi.org/10.1038/s41592-019-0686-2) | Scientific-computing implementation context for solve_ivp and linear algebra tooling |
+
+> [!NOTE]
+> Some publisher pages are paywalled or bot-protected in this execution environment. DOI resolver links above are real and were verified via open Crossref metadata.
 
 ## Bottom Line
 

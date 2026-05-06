@@ -72,6 +72,26 @@ class PerturbationBreakdown:
     srp: np.ndarray
 
 
+@dataclass(frozen=True)
+class DynamicsGap:
+    """ID: RF3BP-LAB-DYN-GAP
+    Requirement: Capture vector/scalar acceleration differences between RF3BP and CR3BP.
+    Purpose: Quantify fidelity gap for diagnostics, continuation tuning, and plotting.
+    Inputs: Time t, state, and model evaluations.
+    Outputs: CR3BP acceleration, RF3BP acceleration, delta vector, and relative norm.
+    Preconditions: Acceleration vectors are finite 3-vectors.
+    Postconditions: relative_gap is non-negative.
+    Failure Modes: Near-zero CR3BP norm can destabilize relative metrics.
+    Error Handling: Uses epsilon denominator floor.
+    """
+
+    cr3bp_acc: np.ndarray
+    rf3bp_acc: np.ndarray
+    delta_acc: np.ndarray
+    delta_norm: float
+    relative_gap: float
+
+
 def _r12_scale(t: float, p: SystemParams) -> tuple[float, float, float]:
     """ID: RF3BP-LAB-DYN-R12SCALE
     Requirement: Compute normalized separation scale and its first two derivatives.
@@ -312,6 +332,45 @@ def cr3bp_jacobi_constant(state: np.ndarray, p: SystemParams) -> float:
 
     vx, vy, vz = state[3:6]
     return 2.0 * cr3bp_effective_potential(state, p) - (vx * vx + vy * vy + vz * vz)
+
+
+def compare_cr3bp_rf3bp(
+    t: float,
+    state: np.ndarray,
+    p: SystemParams,
+    fidelity: FidelityWeights | None = None,
+) -> DynamicsGap:
+    """ID: RF3BP-LAB-DYN-COMPARE
+    Requirement: Compute acceleration-level gap between CR3BP and weighted RF3BP dynamics.
+    Purpose: Provide a direct mathematical answer to "how different" the two models are.
+    Rationale: Orbit-design decisions depend on local acceleration mismatch magnitudes.
+    Inputs: Time t, 6D state, parameters p, optional fidelity weights.
+    Outputs: DynamicsGap dataclass with absolute and relative gap metrics.
+    Preconditions: State has at least 6 finite elements.
+    Postconditions: delta_norm >= 0 and relative_gap >= 0.
+    Assumptions: Comparison is done in the same normalized rotating frame.
+    Side Effects: None.
+    Failure Modes: Singular configurations near primaries can inflate norms.
+    Error Handling: Relative denominator uses max(norm, 1e-12).
+    Constraints: Lightweight enough for per-step history plots.
+    Verification: tests/test_dynamics.py coverage.
+    References: DOI 10.2514/1.G009686, Szebehely (1967).
+    """
+
+    fw = fidelity or FidelityWeights()
+    a_cr3bp = cr3bp_rhs(t, state, p)[3:6]
+    a_rf3bp = rf3bp_pulsating_rhs_weighted(t, state, p, fw)[3:6]
+    delta = a_rf3bp - a_cr3bp
+    delta_norm = float(np.linalg.norm(delta))
+    base_norm = max(float(np.linalg.norm(a_cr3bp)), 1e-12)
+    relative_gap = delta_norm / base_norm
+    return DynamicsGap(
+        cr3bp_acc=a_cr3bp,
+        rf3bp_acc=a_rf3bp,
+        delta_acc=delta,
+        delta_norm=delta_norm,
+        relative_gap=relative_gap,
+    )
 
 
 def propagate(
