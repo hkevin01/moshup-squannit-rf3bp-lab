@@ -181,5 +181,25 @@ def secondary_relative_kinematics(t: float, p: SystemParams) -> RelativeKinemati
     return _secondary_relative_kinematics_from_potential(t, p)
 
 
-def propagate(rhs, state0: np.ndarray, t_span: tuple[float, float], p: SystemParams, t_eval: np.ndarray | None = None):
-    return solve_ivp(lambda t, y: rhs(t, y, p), t_span=t_span, y0=state0, t_eval=t_eval, rtol=1e-10, atol=1e-12)
+def propagate(
+    rhs,
+    state0: np.ndarray,
+    t_span: tuple[float, float],
+    p: SystemParams,
+    t_eval: np.ndarray | None = None,
+    *,
+    method: str = "DOP853",
+    rtol: float = 1e-10,
+    atol: float = 1e-12,
+    max_step: float = np.inf,
+):
+    return solve_ivp(
+        lambda t, y: rhs(t, y, p),
+        t_span=t_span,
+        y0=state0,
+        t_eval=t_eval,
+        method=method,
+        rtol=rtol,
+        atol=atol,
+        max_step=max_step,
+    )
