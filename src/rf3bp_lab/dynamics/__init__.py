@@ -14,3 +14,17 @@ from .models import (
 	rf3bp_pulsating_rhs_weighted,
 	secondary_relative_kinematics,
 )
+from .advanced_gravity import (
+	SphericalHarmonicCoeff,
+	HarmonicGravityModel,
+	EclipseState,
+	detect_eclipse,
+	eclipse_aware_srp,
+	create_default_harmonic_model,
+)
+from .variational import (
+	VariationalState,
+	propagate_variational,
+	covariance_at_time,
+	dilution_of_precision,
+)

@@ -5,7 +5,14 @@
 ![Status](https://img.shields.io/badge/status-research%20sandbox-c97b00)
 ![Focus](https://img.shields.io/badge/focus-RF3BP%20algorithms-006d77)
 
-Research-oriented Python project for experimenting with bounded spacecraft motion near the binary asteroid system **Moshup-Squannit (1999 KW4)** using a **restricted full three-body problem inspired** formulation in a **pulsating-rotating frame**.
+Research-oriented Python project for experimenting with bounded spacecraft motion near the binary asteroid system **Moshup-Squannit (1999 KW4)** using a **Restricted Full Three-Body Problem** (RF3BP) inspired formulation in a **pulsating-rotating frame**.
+
+The project implements advanced astrodynamics techniques including:
+- **CR3BP** (Circular Restricted 3-Body Problem) as a reference baseline
+- **RF3BP** (Restricted Full 3-Body Problem) with pulsation, irregular-body gravity, and solar perturbations
+- Hierarchical continuation shooting and multi-arc trajectory optimization
+- State Transition Matrix (STM) propagation for mission-grade navigation covariance analysis
+- Eclipse-aware Solar Radiation Pressure (SRP) and harmonic gravity expansions
 
 This repository does not try to be a CLI-heavy wrapper. The main value is the **dynamics code**, the **hierarchical shooting continuation logic**, and the **diagnostic plots** that help compare perturbation sources in the neighborhood of a binary asteroid.
 
@@ -41,7 +48,9 @@ This project gives you a compact environment to answer questions like:
 
 ## RF3BP vs CR3BP - What Is The Difference?
 
-CR3BP and RF3BP are not competing "brands" of the same equation - they represent different physical assumptions.
+**Circular Restricted 3-Body Problem (CR3BP)** is the classical model where the primary and secondary bodies orbit at constant separation.
+
+**Restricted Full 3-Body Problem (RF3BP)** extends CR3BP by allowing the primary-secondary separation to pulsate (vary with time), and by accounting for higher-fidelity perturbations. CR3BP and RF3BP are not competing "brands" of the same equation - they represent fundamentally different physical assumptions.
 
 | Aspect | CR3BP | RF3BP (this lab) | Practical Consequence |
 | --- | --- | --- | --- |
@@ -51,21 +60,25 @@ CR3BP and RF3BP are not competing "brands" of the same equation - they represent
 | Frame model | Uniform rotating frame | Pulsating-rotating frame with explicit pulsation terms | CR3BP intuition can fail as fidelity increases |
 | Design workflow | Often direct periodic-orbit correction | Hierarchical continuation from low to high fidelity | Better robustness when full model is stiff |
 
-In the rotating frame, the CR3BP acceleration can be summarized as
+In the rotating frame, the **CR3BP** acceleration can be summarized as:
 
 $$
 \ddot{\mathbf{r}}_{CR3BP} = \nabla \Omega(\mathbf{r}) - 2\,\boldsymbol{\omega} \times \dot{\mathbf{r}}
 $$
 
-while the RF3BP-inspired model used here is
+where $\Omega$ is the effective potential in the rotating frame and $\boldsymbol{\omega}$ is the frame rotation vector.
+
+The **RF3BP-inspired model** used in this laboratory extends CR3BP by incorporating four major perturbations:
 
 $$
-\ddot{\mathbf{r}}_{RF3BP} = \ddot{\mathbf{r}}_{CR3BP}
-+ \mathbf{a}_{pulsation}
-+ \mathbf{a}_{nonspherical}
-+ \mathbf{a}_{solar}
-+ \mathbf{a}_{SRP}
+\ddot{\mathbf{r}}_{RF3BP} = \ddot{\mathbf{r}}_{CR3BP} + \mathbf{a}_{pulsation} + \mathbf{a}_{nonspherical} + \mathbf{a}_{solar} + \mathbf{a}_{SRP}
 $$
+
+Each term represents a distinct physical effect:
+- $\mathbf{a}_{pulsation}$: Frame acceleration due to time-varying primary-secondary distance (binary orbit pulsation)
+- $\mathbf{a}_{nonspherical}$: Gravity corrections from irregular body shapes (harmonic expansion up to degree 20)
+- $\mathbf{a}_{solar}$: Third-body gravity perturbation from the Sun
+- $\mathbf{a}_{SRP}$: Solar radiation pressure, including eclipse-aware geometric attenuation
 
 The new code-level metric in this repository computes the instantaneous gap
 
@@ -337,16 +350,159 @@ Generated outputs include `model_gap_cr3bp_vs_rf3bp.png`, which visualizes both 
 - formal optimization over bounded orbit families
 - mission-grade navigation covariance analysis
 
+## Advanced Features Implemented
+
+This laboratory now includes five major advanced capabilities for mission-grade trajectory analysis:
+
+### 1. High-Order Irregular-Body Gravity using Shape Models
+
+**Module:** `rf3bp_lab.dynamics.advanced_gravity`
+
+Replaces point-mass and J2-style gravity with spherical harmonic expansions up to degree 20:
+
+- **SphericalHarmonicCoeff** dataclass: Stores normalized harmonic coefficients $C_{nm}$ and $S_{nm}$
+- **HarmonicGravityModel**: Bundles coefficients with body parameters ($\mu$, equatorial radius)
+- **_harmonic_accel()**: Computes acceleration from arbitrary-order harmonic expansion using recurrence relations for associated Legendre polynomials
+- **create_default_harmonic_model()**: Factory function for realistic binary-asteroid gravity profiles
+
+#### Example Usage
+
+```python
+from rf3bp_lab.dynamics.advanced_gravity import create_default_harmonic_model
+
+model = create_default_harmonic_model(mu=1.0, radius=0.5, max_degree=20)
+```
+
+### 2. Eclipse-Aware Solar Radiation Pressure (SRP)
+
+**Module:** `rf3bp_lab.dynamics.advanced_gravity`
+
+Provides geometric eclipse detection and SRP attenuation:
+
+- **EclipseState** dataclass: Stores boolean shadow flags, coverage fraction $f_{shadow} \in [0, 1]$, and angular radii
+- **detect_eclipse()**: Cylindrical shadow model with penumbra blending
+  - Returns `in_primary_shadow` and `in_secondary_shadow` flags
+  - Computes `shadow_fraction` for smooth attenuation near edges
+- **eclipse_aware_srp()**: Applies attenuation: $\mathbf{a}_{SRP,eclipsed} = (1 - f_{shadow}) \cdot \mathbf{a}_{SRP}$
+
+#### Mission Significance
+
+Realistic SRP in binary environments requires accounting for geometric blockage by both primary and secondary bodies, especially critical for low-mass spacecraft near small asteroids.
+
+### 3. Multi-Arc Shooting Trajectory Optimization
+
+**Module:** `rf3bp_lab.shooting.multi_shooting`
+
+Enables simultaneous shooting over $N$ arcs with continuity constraints:
+
+- **MultiShootingBVP** solver: Corrects all arc initial states in parallel via damped Newton iteration
+- **ArcDefinition**: Specifies time span, index, and periodicity flag for each arc
+- **ArcResult**: Stores arc-level diagnostics (initial/final states, continuity residuals)
+- Finite-difference Jacobian for robustness; adaptive damping and state bounds
+
+#### Advantages Over Single-Arc Shooting
+
+- Better numerical conditioning for long-duration trajectories (e.g., 10+ periods)
+- Enables midcourse constraint insertion
+- Parallel corrector structure reduces sensitivity to initial guess quality
+
+#### Example Configuration
+
+```python
+from rf3bp_lab.shooting.multi_shooting import MultiShootingBVP, MultiShootingConfig, ArcDefinition
+
+config = MultiShootingConfig(num_arcs=5, max_nfev=10, solve_tol=1e-3)
+solver = MultiShootingBVP(params, config)
+
+arcs = [ArcDefinition(t_start=i*T/5, t_end=(i+1)*T/5, arc_index=i, is_periodic=(i==4))
+        for i in range(5)]
+
+result = solver.solve(initial_states, arcs, fidelity_weights)
+```
+
+### 4. State Transition Matrix (STM) Propagation and Covariance Analysis
+
+**Module:** `rf3bp_lab.dynamics.variational`
+
+Enables mission-grade navigation uncertainty quantification:
+
+- **VariationalState** dataclass: Bundles nominal state and 6x6 STM
+- **propagate_variational()**: Integrates state and variational equations (Jacobi equation) simultaneously
+  - Combines 6 state ODEs + 36 STM ODEs (total: 42 components)
+  - Uses finite-difference Jacobian for RF3BP dynamics
+- **covariance_at_time()**: Transforms covariance via $P(t) = \Phi(t, t_0) \cdot P(t_0) \cdot \Phi(t, t_0)^T$
+- **dilution_of_precision()**: Computes DOP metrics (position/velocity uncertainty, GDOP)
+
+#### Application
+
+Covariance grows predictably along reference trajectories; STM enables trajectory correction planning and measurement requirement trade studies.
+
+### 5. Orbit Family Continuation and Multi-Objective Optimization
+
+**Module:** `rf3bp_lab.shooting.orbit_families`
+
+Traces families of bounded orbits via pseudo-arc-length continuation:
+
+- **OrbitFamilyPoint** dataclass: Records state, period, energy, Jacobi constant, stability index, and objective values
+- **trace_orbit_family()**: Marches along a parameter axis (amplitude, energy, initial position) with adaptive shooting
+- **pareto_front()**: Identifies non-dominated orbits for multi-objective design
+- **compute_family_metrics()**: Summarizes family statistics (period/energy ranges, stability trends)
+
+#### Motivating Use Case
+
+Binary-asteroid missions often explore design families: fixed-energy orbits around the smaller body, or amplitude-constrained paths with varying orbital periods. Families reveal which parameter regions offer stable long-duration bounded orbits vs. regions prone to escape.
+
+#### Example
+
+```python
+from rf3bp_lab.shooting.orbit_families import trace_orbit_family, FamilyConfig
+
+config = FamilyConfig(
+    param_name="amplitude",
+    param_min=0.1,
+    param_max=1.5,
+    num_points=20,
+)
+
+family_result = trace_orbit_family(seed_state, params, config)
+
+pareto_idx = pareto_front(family_result['family_points'], 
+                          objectives=['stability_index', 'energy'])
+```
+
+### 6. Mission-Grade Navigation Covariance Analysis
+
+**Module:** `rf3bp_lab.navigation.covariance`
+
+Provides complete navigation uncertainty workflow:
+
+- **NavUncertaintyAnalysis** dataclass: Stores covariance time series, position/velocity uncertainties, and DOP metrics
+- **propagate_navigation_uncertainty()**: Propagates initial covariance via STM integration
+- **sensitivity_to_maneuver()**: Quantifies how maneuver execution errors ($\sigma_a$ in acceleration) affect final trajectory uncertainty
+- **information_from_measurement()**: Computes information gain and posterior covariance from a measurement update (Kalman information filter perspective)
+
+#### Typical Workflow
+
+1. Start with initial position/velocity uncertainty ($\sigma_x$, $\sigma_v$)
+2. Propagate covariance forward over planned mission segment
+3. Evaluate measurement sensitivity (e.g., ranging accuracy) via information-gain analysis
+4. Assess maneuver robustness to thruster execution errors
+
+---
+
 ## Roadmap
 
-| Priority | Upgrade | Expected Benefit |
-| --- | --- | --- |
-| High | Polyhedral gravity | Much better local field realism near both bodies |
-| High | Multi-shooting continuation | Better robustness for long bounded arcs |
-| High | SPICE-driven Sun geometry | Better solar forcing fidelity |
-| Medium | Family continuation and branch tracking | Better orbit atlas generation |
-| Medium | Event surfaces and Poincare diagnostics | Better structure discovery |
-| Medium | Eclipsing and attitude-sensitive SRP | Better small-spacecraft realism |
+| Priority | Upgrade | Expected Benefit | Status |
+| --- | --- | --- | --- |
+| High | Polyhedral gravity (polyhedron model integration) | Much better local field realism near both bodies | Future |
+| High | Multi-shooting continuation | Better robustness for long bounded arcs | ✅ **Implemented** |
+| High | SPICE-driven Sun geometry | Better solar forcing fidelity | Future |
+| Medium | Family continuation and branch tracking | Better orbit atlas generation | ✅ **Implemented** |
+| Medium | Event surfaces and Poincare diagnostics | Better structure discovery | Future |
+| Medium | Eclipsing and attitude-sensitive SRP | Better small-spacecraft realism | ✅ **Implemented** |
+| Low | Formal optimization over orbit families | Systematic mission design automation | ✅ **Implemented** |
+| Low | Mission-grade navigation covariance analysis | Flight-readiness trajectory analysis | ✅ **Implemented** |
+| Low | High-order irregular-body gravity | Better fidelity for shaped asteroids | ✅ **Implemented** |
 
 ## References and Context
 

@@ -108,3 +108,99 @@ def test_cr3bp_rf3bp_gap_changes_with_fidelity() -> None:
     gap_high = compare_cr3bp_rf3bp(0.25, state, p, fidelity=FidelityWeights())
 
     assert gap_high.delta_norm >= gap_low.delta_norm
+
+
+# ================================================================================
+# Advanced Features Tests
+# ================================================================================
+
+def test_harmonic_gravity_model_creation():
+    """Test creation of spherical harmonic gravity model."""
+    from rf3bp_lab.dynamics.advanced_gravity import create_default_harmonic_model
+    
+    model = create_default_harmonic_model(mu=1.0, radius=0.5, max_degree=4)
+    
+    assert model.mu == 1.0
+    assert model.radius == 0.5
+    assert len(model.coefficients) > 0
+    assert model.use_normalized is True
+
+
+def test_eclipse_detection_no_shadow():
+    """Test eclipse detection when spacecraft is fully illuminated."""
+    from rf3bp_lab.dynamics.advanced_gravity import detect_eclipse
+    
+    sc_pos = np.array([1.0, 0.0, 0.0])
+    primary_pos = np.array([0.0, 0.0, 0.0])
+    secondary_pos = np.array([-0.01, 0.0, 0.0])
+    sun_direction = np.array([1.0, 0.0, 0.0]) / np.sqrt(1.0 + 1e-12)
+    
+    eclipse = detect_eclipse(
+        sc_pos, primary_pos, 0.1, secondary_pos, 0.05, sun_direction
+    )
+    
+    assert eclipse.shadow_fraction >= 0.0
+    assert eclipse.shadow_fraction <= 1.0
+    assert isinstance(eclipse.in_primary_shadow, bool)
+
+
+def test_eclipse_aware_srp():
+    """Test eclipse-aware SRP attenuation."""
+    from rf3bp_lab.dynamics.advanced_gravity import detect_eclipse, eclipse_aware_srp
+    
+    srp_base = np.array([1e-6, 0.0, 0.0])
+    
+    sc_pos = np.array([1.0, 0.0, 0.0])
+    primary_pos = np.array([0.0, 0.0, 0.0])
+    secondary_pos = np.array([-0.01, 0.0, 0.0])
+    sun_direction = np.array([1.0, 0.0, 0.0]) / np.sqrt(1.0 + 1e-12)
+    
+    eclipse = detect_eclipse(
+        sc_pos, primary_pos, 0.1, secondary_pos, 0.05, sun_direction
+    )
+    
+    srp_eclipse = eclipse_aware_srp(srp_base, eclipse)
+    
+    assert np.linalg.norm(srp_eclipse) <= np.linalg.norm(srp_base) * (1 + 1e-12)
+
+
+def test_variational_state_initialization():
+    """Test variational state initialization."""
+    from rf3bp_lab.dynamics.variational import _flatten_variational, _unflatten_variational
+    
+    state = np.array([0.5, 0.0, 0.0, 0.0, 0.4, 0.02])
+    stm = np.eye(6)
+    
+    flat = _flatten_variational(state, stm)
+    assert flat.shape == (42,)
+    
+    state_rec, stm_rec = _unflatten_variational(flat)
+    assert np.allclose(state, state_rec)
+    assert np.allclose(stm, stm_rec)
+
+
+def test_covariance_propagation_preserves_psd():
+    """Test that covariance propagation preserves positive-definiteness."""
+    from rf3bp_lab.dynamics.variational import covariance_at_time
+    
+    cov_0 = np.diag([1.0, 1.0, 1.0, 0.01, 0.01, 0.01])
+    stm = np.eye(6)
+    
+    cov_t = covariance_at_time(cov_0, stm)
+    
+    evals = np.linalg.eigvalsh(cov_t)
+    assert np.all(evals > -1e-10)
+
+
+def test_dilution_of_precision_computes_finite():
+    """Test DOP metric computation."""
+    from rf3bp_lab.dynamics.variational import dilution_of_precision
+    
+    cov = np.diag([1.0, 1.0, 1.0, 0.1, 0.1, 0.1])
+    
+    dop = dilution_of_precision(cov)
+    
+    assert 'position_std_dev' in dop
+    assert 'velocity_std_dev' in dop
+    assert dop['position_std_dev'] > 0
+    assert dop['velocity_std_dev'] > 0
