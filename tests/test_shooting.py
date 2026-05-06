@@ -12,3 +12,6 @@ def test_hierarchical_shooter_runs() -> None:
     assert "period" in out
     assert out["period"] > 0.0
     assert np.isfinite(out["residual_norm"])
+    assert "stages" in out
+    assert len(out["stages"]) > 2
+    assert out["stages"][0].label == "cr3bp"
