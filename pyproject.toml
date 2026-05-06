@@ -1,0 +1,31 @@
+[project]
+name = "moshup-squannit-rf3bp-lab"
+version = "0.1.0"
+description = "RF3BP sandbox for bounded orbit analysis near binary asteroid Moshup-Squannit"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "numpy>=1.26.0",
+  "scipy>=1.13.0",
+  "matplotlib>=3.8.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0.0",
+  "ruff>=0.6.0",
+]
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
