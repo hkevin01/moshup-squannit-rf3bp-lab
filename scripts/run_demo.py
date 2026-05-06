@@ -105,7 +105,12 @@ def main() -> None:
         "mean_rel_gap": float(np.mean(gap_rel)),
         "n_steps": int(sol_rf3bp.t.size),
     }
-    plot_result_dashboard(summary_metrics, perturbation_peaks)
+    plot_result_dashboard(
+        summary_metrics,
+        perturbation_peaks,
+        stage_labels=stage_labels,
+        stage_residuals=stage_residuals,
+    )
     plt.savefig(os.path.join(out_dir, "result_snapshot_dashboard.png"), dpi=160)
     plt.close()
 

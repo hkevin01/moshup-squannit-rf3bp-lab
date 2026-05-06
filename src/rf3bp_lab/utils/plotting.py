@@ -65,40 +65,116 @@ def plot_model_gap(time: np.ndarray, absolute_gap: np.ndarray, relative_gap: np.
 def plot_result_dashboard(
     summary_metrics: dict[str, float],
     perturbation_peaks: dict[str, float],
+    stage_labels: list[str] | None = None,
+    stage_residuals: np.ndarray | None = None,
     title: str = "RF3BP Demo Result Snapshot",
 ) -> None:
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11.2, 4.8))
+    fig = plt.figure(figsize=(13.0, 7.6), constrained_layout=True)
+    gs = fig.add_gridspec(2, 2, wspace=0.28, hspace=0.34)
+
+    ax1 = fig.add_subplot(gs[0, 0])
+    ax2 = fig.add_subplot(gs[0, 1])
+    ax3 = fig.add_subplot(gs[1, 0])
+    ax4 = fig.add_subplot(gs[1, 1])
 
     labels = list(perturbation_peaks.keys())
     values = np.array([perturbation_peaks[k] for k in labels], dtype=float)
-    ax1.bar(labels, values, color=["#9b2226", "#ca6702", "#005f73", "#0a9396"])
+    colors = ["#b00020", "#e76f51", "#1d3557", "#2a9d8f"]
+    bars = ax1.bar(labels, values, color=colors, alpha=0.92)
     ax1.set_yscale("log")
-    ax1.set_ylabel("peak acceleration norm")
-    ax1.set_title("Peak Perturbation Magnitudes")
-    ax1.grid(alpha=0.25, axis="y")
+    ax1.set_ylabel("Peak Acceleration Norm")
+    ax1.set_title("Perturbation Dominance", fontweight="bold")
+    ax1.grid(alpha=0.2, axis="y")
+    ax1.set_axisbelow(True)
+    for bar, val in zip(bars, values):
+        y = max(val * 1.2, 1e-20)
+        ax1.text(bar.get_x() + bar.get_width() / 2.0, y, f"{val:.2e}", ha="center", va="bottom", fontsize=8)
 
-    ax2.axis("off")
-    lines = [
-        f"period = {summary_metrics['period']:.6f}",
-        f"residual_norm = {summary_metrics['residual_norm']:.3e}",
-        f"stage1_cost = {summary_metrics['stage1_cost']:.3e}",
-        f"final_cost = {summary_metrics['final_cost']:.3e}",
-        f"max_abs_gap = {summary_metrics['max_abs_gap']:.3e}",
-        f"max_rel_gap = {summary_metrics['max_rel_gap']:.3e}",
-        f"mean_abs_gap = {summary_metrics['mean_abs_gap']:.3e}",
-        f"mean_rel_gap = {summary_metrics['mean_rel_gap']:.3e}",
+    if stage_labels is not None and stage_residuals is not None and len(stage_labels) == len(stage_residuals):
+        x = np.arange(len(stage_labels))
+        ax2.plot(x, stage_residuals, marker="o", lw=2.0, color="#264653")
+        ax2.fill_between(x, stage_residuals, np.max(stage_residuals), alpha=0.12, color="#264653")
+        ax2.set_xticks(x)
+        ax2.set_xticklabels(stage_labels, rotation=40, ha="right", fontsize=8)
+        ax2.set_yscale("log")
+        ax2.set_ylabel("Residual Norm")
+        ax2.set_title("Continuation Progress", fontweight="bold")
+        ax2.grid(alpha=0.2)
+    else:
+        ax2.axis("off")
+        ax2.text(0.5, 0.5, "Continuation data unavailable", ha="center", va="center", fontsize=11)
+
+    abs_gap = summary_metrics["max_abs_gap"]
+    mean_gap = summary_metrics["mean_abs_gap"]
+    rel_max = summary_metrics["max_rel_gap"]
+    rel_mean = summary_metrics["mean_rel_gap"]
+    gap_labels = ["Max |delta a|", "Mean |delta a|", "Max rho", "Mean rho"]
+    gap_vals = [abs_gap, mean_gap, rel_max, rel_mean]
+    gap_colors = ["#c1121f", "#f3722c", "#277da1", "#43aa8b"]
+    y_idx = np.arange(len(gap_labels))
+    ax3.barh(y_idx, gap_vals, color=gap_colors, alpha=0.9)
+    ax3.set_xscale("log")
+    ax3.set_yticks(y_idx)
+    ax3.set_yticklabels(gap_labels)
+    ax3.set_xlabel("Magnitude (log scale)")
+    ax3.set_title("RF3BP vs CR3BP Gap Indicators", fontweight="bold")
+    ax3.grid(alpha=0.2, axis="x")
+    for idx, val in enumerate(gap_vals):
+        ax3.text(val * 1.08, idx, f"{val:.2e}", va="center", fontsize=8)
+
+    ax4.axis("off")
+    ax4.set_title("Mission Snapshot", fontweight="bold")
+    cards = [
+        ("Period", f"{summary_metrics['period']:.6f}", "#d9ed92"),
+        ("Residual", f"{summary_metrics['residual_norm']:.3e}", "#ffddd2"),
+        ("Stage-1 Cost", f"{summary_metrics['stage1_cost']:.3e}", "#e9edc9"),
+        ("Final Cost", f"{summary_metrics['final_cost']:.3e}", "#fde2e4"),
     ]
-    ax2.text(
-        0.02,
-        0.98,
-        "\n".join(lines),
-        va="top",
-        ha="left",
-        family="monospace",
-        fontsize=10,
-        bbox={"boxstyle": "round,pad=0.5", "facecolor": "#f5f5f5", "edgecolor": "#cccccc"},
-    )
-    ax2.set_title("Key Metrics (Default Seed)")
+    x0, y0 = 0.03, 0.86
+    dy = 0.2
+    for i, (label, value, face) in enumerate(cards):
+        y = y0 - i * dy
+        ax4.text(
+            x0,
+            y,
+            f"{label}\n{value}",
+            transform=ax4.transAxes,
+            fontsize=10,
+            va="top",
+            bbox={"boxstyle": "round,pad=0.35", "facecolor": face, "edgecolor": "#7a7a7a"},
+        )
 
-    fig.suptitle(title)
-    plt.tight_layout()
+    dominant_name = labels[int(np.argmax(values))] if len(values) else "n/a"
+    dominant_val = float(np.max(values)) if len(values) else 0.0
+    ax4.text(
+        0.52,
+        0.36,
+        "Visual Aids",
+        transform=ax4.transAxes,
+        fontsize=11,
+        fontweight="bold",
+    )
+    ax4.text(
+        0.52,
+        0.25,
+        f"Dominant perturbation: {dominant_name}",
+        transform=ax4.transAxes,
+        fontsize=9,
+    )
+    ax4.text(
+        0.52,
+        0.16,
+        f"Peak value: {dominant_val:.2e}",
+        transform=ax4.transAxes,
+        fontsize=9,
+    )
+    ax4.text(
+        0.52,
+        0.07,
+        "Lower residual trend indicates better stage-to-stage correction.",
+        transform=ax4.transAxes,
+        fontsize=8,
+        color="#404040",
+    )
+
+    fig.suptitle(title, fontsize=15, fontweight="bold")

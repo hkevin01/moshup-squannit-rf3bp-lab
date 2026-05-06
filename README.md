@@ -118,7 +118,8 @@ The following results were generated directly from the current repository code u
 OUTPUT_DIR=docs/figures ./.venv/bin/python scripts/run_demo.py
 ```
 
-Raw machine-readable metrics are stored in `docs/results/latest_demo_metrics.json`.
+The demo now prioritizes a visual snapshot screenshot with labeled panels, trend cues, and highlighted mission indicators.
+Machine-readable metrics are still exported to `docs/results/latest_demo_metrics.json` for automated post-processing.
 
 | Metric | Value | Context |
 | --- | --- | --- |
@@ -137,7 +138,7 @@ Raw machine-readable metrics are stored in `docs/results/latest_demo_metrics.jso
 | --- |
 | ![Result Snapshot](docs/figures/result_snapshot_dashboard.png) |
 
-This dashboard combines peak perturbation magnitudes with key continuation and model-gap metrics, so each demo run yields a compact screenshot artifact for progress tracking.
+This dashboard now uses visual aids (annotated bars, continuation trend panel, labeled metric cards, and gap indicators), so each demo run yields a screenshot that can be interpreted quickly without reading raw JSON.
 
 > [!NOTE]
 > The figures above are generated from the repository's current model and default parameters. They are useful for comparative algorithm work, not for claiming flight-certified truth.
