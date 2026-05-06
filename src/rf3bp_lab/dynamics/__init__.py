@@ -3,6 +3,8 @@ from .models import (
 	FidelityWeights,
 	PerturbationBreakdown,
 	RelativeKinematics,
+	cr3bp_effective_potential,
+	cr3bp_jacobi_constant,
 	cr3bp_rhs,
 	propagate,
 	rf3bp_breakdown,

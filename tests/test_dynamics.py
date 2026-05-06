@@ -2,6 +2,8 @@ import numpy as np
 
 from rf3bp_lab.dynamics.models import (
     FidelityWeights,
+    cr3bp_effective_potential,
+    cr3bp_jacobi_constant,
     cr3bp_rhs,
     rf3bp_breakdown,
     rf3bp_pulsating_rhs,
@@ -62,3 +64,14 @@ def test_breakdown_components_are_finite() -> None:
     assert np.all(np.isfinite(b.pulsation))
     assert np.all(np.isfinite(b.solar_gravity))
     assert np.all(np.isfinite(b.srp))
+
+
+def test_cr3bp_scalar_diagnostics_are_finite() -> None:
+    p = SystemParams()
+    state = np.array([0.3, 0.2, 0.01, -0.05, 0.12, -0.01], dtype=float)
+
+    omega = cr3bp_effective_potential(state, p)
+    jacobi = cr3bp_jacobi_constant(state, p)
+
+    assert np.isfinite(omega)
+    assert np.isfinite(jacobi)

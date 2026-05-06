@@ -1,5 +1,22 @@
 from __future__ import annotations
 
+"""ID: RF3BP-LAB-DYN-MODELS
+Requirement: Provide deterministic CR3BP and RF3BP-inspired dynamics building blocks.
+Purpose: Support bounded-orbit experimentation near binary-asteroid systems.
+Rationale: Keep physics terms decomposed for continuation and diagnostics.
+Inputs: Normalized state/time and SystemParams.
+Outputs: State derivatives, perturbation breakdowns, and propagation results.
+Preconditions: Finite numeric inputs and physically meaningful parameter scales.
+Postconditions: Returned arrays have fixed shapes and finite values for nominal inputs.
+Assumptions: Rotating-frame normalization and simplified perturbation proxies.
+Side Effects: None.
+Failure Modes: Ill-conditioned geometry can amplify roundoff near singular distances.
+Error Handling: Softening epsilons and bounds checks prevent non-finite operations.
+Constraints: Lightweight runtime for iterative shooting workflows.
+Verification: Unit tests in tests/test_dynamics.py and tests/test_shooting.py.
+References: DOI 10.2514/1.G009686, DOI 10.1016/0771-050X(80)90013-3.
+"""
+
 from dataclasses import dataclass
 
 import numpy as np
@@ -10,6 +27,16 @@ from .params import SystemParams
 
 @dataclass(frozen=True)
 class FidelityWeights:
+    """ID: RF3BP-LAB-DYN-FIDELITY
+    Requirement: Scale perturbation families continuously from 0 to 1.
+    Purpose: Enable hierarchical continuation between model fidelities.
+    Inputs: Scalar weights for pulsation, nonspherical gravity, solar gravity, and SRP.
+    Outputs: Immutable weight container.
+    Preconditions: Weights are finite scalars.
+    Postconditions: Values remain unchanged after construction.
+    Failure Modes: Non-finite values can destabilize residual correction.
+    """
+
     pulsation: float = 1.0
     nonspherical: float = 1.0
     solar_gravity: float = 1.0
@@ -18,6 +45,11 @@ class FidelityWeights:
 
 @dataclass(frozen=True)
 class RelativeKinematics:
+    """ID: RF3BP-LAB-DYN-RELKIN
+    Requirement: Carry relative secondary-body position, velocity, acceleration, and jerk.
+    Purpose: Expose pulsation-driven kinematic terms for diagnostics and dynamics.
+    """
+
     r_vec: np.ndarray
     v_vec: np.ndarray
     a_vec: np.ndarray
@@ -26,6 +58,11 @@ class RelativeKinematics:
 
 @dataclass(frozen=True)
 class PerturbationBreakdown:
+    """ID: RF3BP-LAB-DYN-BREAKDOWN
+    Requirement: Store additive acceleration terms used by the weighted RF3BP rhs.
+    Purpose: Support perturbation ranking and sensitivity analysis.
+    """
+
     grav_primary: np.ndarray
     grav_secondary: np.ndarray
     coriolis: np.ndarray
@@ -36,6 +73,14 @@ class PerturbationBreakdown:
 
 
 def _r12_scale(t: float, p: SystemParams) -> tuple[float, float, float]:
+    """ID: RF3BP-LAB-DYN-R12SCALE
+    Requirement: Compute normalized separation scale and its first two derivatives.
+    Inputs: Time t, system parameters p.
+    Outputs: (r12, r12_dot, r12_ddot).
+    Preconditions: p.pulsation_nu and p.pulsation_e are finite.
+    Postconditions: Returns finite scalars for nominal parameter ranges.
+    """
+
     c = np.cos(p.pulsation_nu * t)
     s = np.sin(p.pulsation_nu * t)
     r = 1.0 + p.pulsation_e * c
@@ -45,6 +90,14 @@ def _r12_scale(t: float, p: SystemParams) -> tuple[float, float, float]:
 
 
 def _j2_accel(rel: np.ndarray, mu_body: float, j2: float, r_body_scaled: float) -> np.ndarray:
+    """ID: RF3BP-LAB-DYN-J2
+    Requirement: Return point-mass plus J2-style acceleration for one gravitating body.
+    Inputs: Relative vector rel, body mass fraction mu_body, J2 proxy, scaled radius.
+    Outputs: 3-vector acceleration.
+    Failure Modes: Near-zero radius can cause singular growth without regularization.
+    Error Handling: Adds epsilon to squared distance.
+    """
+
     x, y, z = rel
     r2 = np.dot(rel, rel) + 1e-12
     r = np.sqrt(r2)
@@ -60,6 +113,13 @@ def _j2_accel(rel: np.ndarray, mu_body: float, j2: float, r_body_scaled: float) 
 
 
 def _solar_terms(t: float, pos: np.ndarray, p: SystemParams) -> tuple[np.ndarray, np.ndarray]:
+    """ID: RF3BP-LAB-DYN-SOLAR
+    Requirement: Compute differential solar gravity and SRP proxies.
+    Inputs: Time t, spacecraft position pos, system parameters p.
+    Outputs: Tuple (a_sun, a_srp).
+    Assumptions: Simplified planar Sun motion and constant SRP magnitude scaling.
+    """
+
     sun_angle = 0.03 * t
     sun = p.sun_distance_scaled * np.array([np.cos(sun_angle), np.sin(sun_angle), 0.0])
     rel_sc = sun - pos
@@ -75,6 +135,13 @@ def _solar_terms(t: float, pos: np.ndarray, p: SystemParams) -> tuple[np.ndarray
 
 
 def _secondary_relative_kinematics_from_potential(t: float, p: SystemParams) -> RelativeKinematics:
+    """ID: RF3BP-LAB-DYN-SECKIN
+    Requirement: Derive relative acceleration and jerk from a two-body potential Hessian.
+    Inputs: Time t and system parameters p.
+    Outputs: RelativeKinematics dataclass.
+    Rationale: Exposes pulsation-driven inertial terms with explicit derivatives.
+    """
+
     r12, r12_dot, _ = _r12_scale(t, p)
     r_vec = np.array([r12, 0.0, 0.0], dtype=float)
     v_vec = np.array([r12_dot, 0.0, 0.0], dtype=float)
@@ -92,6 +159,14 @@ def _secondary_relative_kinematics_from_potential(t: float, p: SystemParams) -> 
 
 
 def cr3bp_rhs(t: float, state: np.ndarray, p: SystemParams) -> np.ndarray:
+    """ID: RF3BP-LAB-DYN-CR3BP-RHS
+    Requirement: Evaluate the normalized rotating-frame CR3BP state derivative.
+    Inputs: Time t, state [x,y,z,vx,vy,vz], parameters p.
+    Outputs: 6-element derivative vector.
+    Preconditions: state has 6 finite components.
+    Postconditions: Output shape is (6,).
+    """
+
     x, y, z, vx, vy, vz = state
     mu = p.mu
 
@@ -108,6 +183,13 @@ def cr3bp_rhs(t: float, state: np.ndarray, p: SystemParams) -> np.ndarray:
 
 
 def rf3bp_breakdown(t: float, state: np.ndarray, p: SystemParams, fidelity: FidelityWeights | None = None) -> PerturbationBreakdown:
+    """ID: RF3BP-LAB-DYN-RF3BP-BREAKDOWN
+    Requirement: Compute all additive acceleration components for the RF3BP-inspired model.
+    Inputs: Time t, state vector, parameters p, optional fidelity weights.
+    Outputs: PerturbationBreakdown with 7 acceleration components.
+    Constraints: Designed for repeated calls inside continuation and plotting loops.
+    """
+
     fidelity = fidelity or FidelityWeights()
 
     x, y, z, vx, vy, vz = state
@@ -167,6 +249,13 @@ def rf3bp_pulsating_rhs_weighted(
     p: SystemParams,
     fidelity: FidelityWeights,
 ) -> np.ndarray:
+    """ID: RF3BP-LAB-DYN-RF3BP-WRHS
+    Requirement: Build full state derivative by summing weighted perturbation terms.
+    Inputs: Time t, state, parameters p, fidelity weights.
+    Outputs: 6-element derivative vector.
+    Return-Path: Single return statement with deterministic assembly.
+    """
+
     x, y, z, vx, vy, vz = state
     b = rf3bp_breakdown(t, state, p, fidelity)
     acc = b.grav_primary + b.grav_secondary + b.coriolis + b.centrifugal + b.pulsation + b.solar_gravity + b.srp
@@ -174,11 +263,55 @@ def rf3bp_pulsating_rhs_weighted(
 
 
 def rf3bp_pulsating_rhs(t: float, state: np.ndarray, p: SystemParams) -> np.ndarray:
+    """ID: RF3BP-LAB-DYN-RF3BP-RHS
+    Requirement: Evaluate weighted RF3BP rhs using full-unity fidelity weights.
+    """
+
     return rf3bp_pulsating_rhs_weighted(t, state, p, FidelityWeights())
 
 
 def secondary_relative_kinematics(t: float, p: SystemParams) -> RelativeKinematics:
+    """ID: RF3BP-LAB-DYN-SECKIN-PUBLIC
+    Requirement: Expose secondary relative kinematics to callers and tests.
+    """
+
     return _secondary_relative_kinematics_from_potential(t, p)
+
+
+def cr3bp_effective_potential(state: np.ndarray, p: SystemParams) -> float:
+    """ID: RF3BP-LAB-DYN-CR3BP-OMEGA
+    Requirement: Compute rotating-frame CR3BP effective potential Omega(x,y,z).
+    Purpose: Provide scalar diagnostics for equilibrium and energy analyses.
+    Inputs: State vector with at least first three coordinates and parameters p.
+    Outputs: Scalar potential value.
+    Preconditions: State has finite position components.
+    Postconditions: Finite scalar for non-collision positions.
+    Failure Modes: Near-primary/secondary positions create singular growth.
+    Error Handling: Distance softening epsilon protects against division-by-zero.
+    References: Szebehely, Theory of Orbits (1967).
+    """
+
+    x, y, z = state[:3]
+    mu = p.mu
+    r1 = np.linalg.norm(np.array([x + mu, y, z])) + 1e-12
+    r2 = np.linalg.norm(np.array([x - (1.0 - mu), y, z])) + 1e-12
+    return 0.5 * (x * x + y * y) + (1.0 - mu) / r1 + mu / r2
+
+
+def cr3bp_jacobi_constant(state: np.ndarray, p: SystemParams) -> float:
+    """ID: RF3BP-LAB-DYN-CR3BP-JACOBI
+    Requirement: Compute Jacobi constant C = 2*Omega - v^2 for CR3BP states.
+    Purpose: Enable trajectory quality checks and phase-space diagnostics.
+    Inputs: Full state vector [x,y,z,vx,vy,vz], parameters p.
+    Outputs: Scalar Jacobi constant.
+    Preconditions: State has 6 finite components.
+    Postconditions: Finite scalar for non-collision states.
+    Verification: Covered by unit tests that assert finite values.
+    References: CR3BP standard integral from rotating-frame equations.
+    """
+
+    vx, vy, vz = state[3:6]
+    return 2.0 * cr3bp_effective_potential(state, p) - (vx * vx + vy * vy + vz * vz)
 
 
 def propagate(
@@ -193,6 +326,17 @@ def propagate(
     atol: float = 1e-12,
     max_step: float = np.inf,
 ):
+    """ID: RF3BP-LAB-DYN-PROPAGATE
+    Requirement: Integrate a parameterized rhs over a time span.
+    Inputs: rhs(t, y, p), initial state, time span, params, solver controls.
+    Outputs: scipy.integrate.OdeResult.
+    Preconditions: rhs is callable and state dimensions are consistent.
+    Postconditions: Returns solver status and sampled state history.
+    Failure Modes: Integrator may fail on stiff/ill-scaled trajectories.
+    Error Handling: Caller checks solve_ivp success flag.
+    References: DOI 10.1016/0771-050X(80)90013-3.
+    """
+
     return solve_ivp(
         lambda t, y: rhs(t, y, p),
         t_span=t_span,
