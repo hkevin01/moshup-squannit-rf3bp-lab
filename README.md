@@ -97,6 +97,35 @@ This gives a direct, quantitative answer to "how far from CR3BP" a trajectory po
 | --- |
 | ![Model Gap](docs/figures/model_gap_cr3bp_vs_rf3bp.png) |
 
+## Latest Produced Results (Default Seed)
+
+The following results were generated directly from the current repository code using:
+
+```bash
+OUTPUT_DIR=docs/figures ./.venv/bin/python scripts/run_demo.py
+```
+
+Raw machine-readable metrics are stored in `docs/results/latest_demo_metrics.json`.
+
+| Metric | Value | Context |
+| --- | --- | --- |
+| Period estimate | `6.329724` | Final continuation period estimate returned by the shooter |
+| Final residual norm | `5.749e+00` | Periodicity defect for the final continuation stage |
+| Stage-1 cost | `3.805e-02` | Cost right after CR3BP correction |
+| Final stage cost | `1.653e+01` | Cost at full model fidelity |
+| Max absolute model gap | `1.986e+14` | Peak value of $\|a_{RF3BP} - a_{CR3BP}\|$ along propagated path |
+| Mean relative model gap | `4.323e-01` | Mean of $\|\Delta a\| / \|a_{CR3BP}\|$ over 4000 samples |
+| Max relative model gap | `7.471e-01` | Peak normalized mismatch between RF3BP and CR3BP |
+
+> [!NOTE]
+> The very large absolute peak reflects the current simplified pulsation formulation and sampling near strong local gradients. For design decisions, relative gap trends and component-wise diagnostics are usually more informative than a single absolute peak.
+
+| Result Snapshot Dashboard |
+| --- |
+| ![Result Snapshot](docs/figures/result_snapshot_dashboard.png) |
+
+This dashboard combines peak perturbation magnitudes with key continuation and model-gap metrics, so each demo run yields a compact screenshot artifact for progress tracking.
+
 > [!NOTE]
 > The figures above are generated from the repository's current model and default parameters. They are useful for comparative algorithm work, not for claiming flight-certified truth.
 
