@@ -1,14 +1,15 @@
 from __future__ import annotations
 
+import json
 import os
 
 import matplotlib.pyplot as plt
 import numpy as np
 
-from rf3bp_lab.dynamics.models import FidelityWeights, cr3bp_rhs, propagate, rf3bp_breakdown, rf3bp_pulsating_rhs
+from rf3bp_lab.dynamics.models import FidelityWeights, compare_cr3bp_rf3bp, cr3bp_rhs, propagate, rf3bp_breakdown, rf3bp_pulsating_rhs
 from rf3bp_lab.dynamics.params import SystemParams
 from rf3bp_lab.shooting.hierarchical import HierarchicalShooter
-from rf3bp_lab.utils.plotting import plot_perturbation_norms, plot_stage_convergence, plot_trajectory
+from rf3bp_lab.utils.plotting import plot_model_gap, plot_perturbation_norms, plot_result_dashboard, plot_stage_convergence, plot_trajectory
 
 
 def _component_norm_history(t: np.ndarray, states: np.ndarray, p: SystemParams) -> dict[str, np.ndarray]:
@@ -27,6 +28,21 @@ def _component_norm_history(t: np.ndarray, states: np.ndarray, p: SystemParams) 
         history["solar_gravity"][i] = np.linalg.norm(b_full.solar_gravity)
         history["srp"][i] = np.linalg.norm(b_full.srp)
     return history
+
+
+def _model_gap_history(t: np.ndarray, states: np.ndarray, p: SystemParams) -> tuple[np.ndarray, np.ndarray]:
+    absolute_gap = np.zeros_like(t)
+    relative_gap = np.zeros_like(t)
+    for i in range(t.size):
+        gap = compare_cr3bp_rf3bp(float(t[i]), states[:, i], p)
+        absolute_gap[i] = gap.delta_norm
+        relative_gap[i] = gap.relative_gap
+    return absolute_gap, relative_gap
+
+
+def _write_json(path: str, payload: dict) -> None:
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2, sort_keys=True)
 
 
 def main() -> None:
@@ -71,6 +87,39 @@ def main() -> None:
     plot_stage_convergence(stage_labels, stage_residuals)
     plt.savefig(os.path.join(out_dir, "continuation_convergence.png"), dpi=160)
     plt.close()
+
+    gap_abs, gap_rel = _model_gap_history(sol_rf3bp.t, sol_rf3bp.y, p)
+    plot_model_gap(sol_rf3bp.t, gap_abs, gap_rel)
+    plt.savefig(os.path.join(out_dir, "model_gap_cr3bp_vs_rf3bp.png"), dpi=160)
+    plt.close()
+
+    perturbation_peaks = {k: float(np.max(v)) for k, v in perturbation.items()}
+    summary_metrics = {
+        "period": period,
+        "residual_norm": float(result["residual_norm"]),
+        "stage1_cost": float(result["stage1_cost"]),
+        "final_cost": float(result["stage2_cost"]),
+        "max_abs_gap": float(np.max(gap_abs)),
+        "max_rel_gap": float(np.max(gap_rel)),
+        "mean_abs_gap": float(np.mean(gap_abs)),
+        "mean_rel_gap": float(np.mean(gap_rel)),
+        "n_steps": int(sol_rf3bp.t.size),
+    }
+    plot_result_dashboard(summary_metrics, perturbation_peaks)
+    plt.savefig(os.path.join(out_dir, "result_snapshot_dashboard.png"), dpi=160)
+    plt.close()
+
+    results_dir = os.path.join(os.path.dirname(out_dir), "results") if os.path.basename(out_dir) == "figures" else os.path.join(out_dir, "results")
+    os.makedirs(results_dir, exist_ok=True)
+    _write_json(
+        os.path.join(results_dir, "latest_demo_metrics.json"),
+        {
+            "summary_metrics": summary_metrics,
+            "perturbation_peaks": perturbation_peaks,
+            "stage_residuals": [float(s.residual_norm) for s in stage_data],
+            "stage_labels": [s.label for s in stage_data],
+        },
+    )
 
     if os.environ.get("SHOW_PLOTS", "0") == "1":
         plt.show()

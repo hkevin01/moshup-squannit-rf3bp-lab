@@ -1,0 +1,33 @@
+{
+  "perturbation_peaks": {
+    "nonspherical": 1.7944536550933328,
+    "pulsation": 198613031593167.06,
+    "solar_gravity": 1.281243771532774e-10,
+    "srp": 2.500000000000001e-06
+  },
+  "stage_labels": [
+    "cr3bp",
+    "continuation_01",
+    "continuation_02",
+    "continuation_03",
+    "continuation_04"
+  ],
+  "stage_residuals": [
+    0.27585273560556595,
+    4.8440005171888005,
+    5.749239084447435,
+    5.749239084449023,
+    5.749368035505514
+  ],
+  "summary_metrics": {
+    "final_cost": 16.527616403846267,
+    "max_abs_gap": 198613031593167.06,
+    "max_rel_gap": 0.7471233532548324,
+    "mean_abs_gap": 5535702536767.193,
+    "mean_rel_gap": 0.43229425008482547,
+    "n_steps": 4000,
+    "period": 6.329724080165716,
+    "residual_norm": 5.749368035505514,
+    "stage1_cost": 0.03804736587053713
+  }
+}

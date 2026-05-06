@@ -39,6 +39,44 @@ This project gives you a compact environment to answer questions like:
 | Hierarchical continuation | Staged shooting from CR3BP to higher fidelity | Transfers a seed orbit across models | Avoids solving the hardest model from scratch |
 | Diagnostics | Trajectory and perturbation plots | Shows which effects dominate and where | Useful for analysis, papers, and design iteration |
 
+## RF3BP vs CR3BP - What Is The Difference?
+
+CR3BP and RF3BP are not competing "brands" of the same equation - they represent different physical assumptions.
+
+| Aspect | CR3BP | RF3BP (this lab) | Practical Consequence |
+| --- | --- | --- | --- |
+| Primary-secondary distance | Constant | Time-varying (pulsating) | Adds nonuniform frame terms and shifts equilibrium structure |
+| Gravity field shape | Point masses only | Point masses + J2-like nonspherical corrections | Local accelerations can deviate strongly near bodies |
+| External forcing | None | Solar third-body differential gravity + SRP | Long-time bounded motion is more sensitive |
+| Frame model | Uniform rotating frame | Pulsating-rotating frame with explicit pulsation terms | CR3BP intuition can fail as fidelity increases |
+| Design workflow | Often direct periodic-orbit correction | Hierarchical continuation from low to high fidelity | Better robustness when full model is stiff |
+
+In the rotating frame, the CR3BP acceleration can be summarized as
+
+$$
+\ddot{\mathbf{r}}_{CR3BP} = \nabla \Omega(\mathbf{r}) - 2\,\boldsymbol{\omega} \times \dot{\mathbf{r}}
+$$
+
+while the RF3BP-inspired model used here is
+
+$$
+\ddot{\mathbf{r}}_{RF3BP} = \ddot{\mathbf{r}}_{CR3BP}
++ \mathbf{a}_{pulsation}
++ \mathbf{a}_{nonspherical}
++ \mathbf{a}_{solar}
++ \mathbf{a}_{SRP}
+$$
+
+The new code-level metric in this repository computes the instantaneous gap
+
+$$
+\Delta \mathbf{a} = \ddot{\mathbf{r}}_{RF3BP} - \ddot{\mathbf{r}}_{CR3BP},
+\quad
+\rho = \frac{\|\Delta \mathbf{a}\|}{\|\ddot{\mathbf{r}}_{CR3BP}\|}
+$$
+
+This gives a direct, quantitative answer to "how far from CR3BP" a trajectory point is.
+
 ## Visual Outputs
 
 ### RF3BP vs CR3BP
@@ -52,6 +90,12 @@ This project gives you a compact environment to answer questions like:
 | Perturbation Magnitudes | Continuation Convergence |
 | --- | --- |
 | ![Perturbations](docs/figures/perturbation_norms.png) | ![Continuation](docs/figures/continuation_convergence.png) |
+
+### Model Difference Diagnostics
+
+| RF3BP vs CR3BP Gap History |
+| --- |
+| ![Model Gap](docs/figures/model_gap_cr3bp_vs_rf3bp.png) |
 
 > [!NOTE]
 > The figures above are generated from the repository's current model and default parameters. They are useful for comparative algorithm work, not for claiming flight-certified truth.
@@ -100,6 +144,8 @@ The higher-fidelity model in `src/rf3bp_lab/dynamics/models.py` combines:
 - pulsation inertial correction terms
 - third-body solar gravity
 - solar radiation pressure
+
+The same module now includes a direct comparison utility that computes acceleration-level mismatch between the CR3BP and RF3BP equations at any state and time.
 
 ### 3. Potential-Derivative Relative Kinematics
 
@@ -243,6 +289,8 @@ sequenceDiagram
 | Run tests | `./.venv/bin/python -m pytest -q` |
 | Run only shooting test | `./.venv/bin/python -m pytest -q tests/test_shooting.py` |
 | Regenerate figures | `OUTPUT_DIR=docs/figures ./.venv/bin/python scripts/run_demo.py` |
+
+Generated outputs include `model_gap_cr3bp_vs_rf3bp.png`, which visualizes both absolute and relative acceleration mismatch history.
 
 ## What This Project Is Good For
 

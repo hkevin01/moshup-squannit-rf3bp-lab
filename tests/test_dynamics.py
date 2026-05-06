@@ -2,6 +2,7 @@ import numpy as np
 
 from rf3bp_lab.dynamics.models import (
     FidelityWeights,
+    compare_cr3bp_rf3bp,
     cr3bp_effective_potential,
     cr3bp_jacobi_constant,
     cr3bp_rhs,
@@ -75,3 +76,35 @@ def test_cr3bp_scalar_diagnostics_are_finite() -> None:
 
     assert np.isfinite(omega)
     assert np.isfinite(jacobi)
+
+
+def test_cr3bp_rf3bp_gap_metrics_are_finite() -> None:
+    p = SystemParams()
+    state = np.array([0.35, 0.11, -0.02, 0.03, 0.18, 0.01], dtype=float)
+
+    gap = compare_cr3bp_rf3bp(0.25, state, p)
+
+    assert gap.cr3bp_acc.shape == (3,)
+    assert gap.rf3bp_acc.shape == (3,)
+    assert gap.delta_acc.shape == (3,)
+    assert np.all(np.isfinite(gap.cr3bp_acc))
+    assert np.all(np.isfinite(gap.rf3bp_acc))
+    assert np.isfinite(gap.delta_norm)
+    assert np.isfinite(gap.relative_gap)
+    assert gap.delta_norm >= 0.0
+    assert gap.relative_gap >= 0.0
+
+
+def test_cr3bp_rf3bp_gap_changes_with_fidelity() -> None:
+    p = SystemParams()
+    state = np.array([0.35, 0.11, -0.02, 0.03, 0.18, 0.01], dtype=float)
+
+    gap_low = compare_cr3bp_rf3bp(
+        0.25,
+        state,
+        p,
+        fidelity=FidelityWeights(pulsation=0.0, nonspherical=0.0, solar_gravity=0.0, srp=0.0),
+    )
+    gap_high = compare_cr3bp_rf3bp(0.25, state, p, fidelity=FidelityWeights())
+
+    assert gap_high.delta_norm >= gap_low.delta_norm

@@ -60,3 +60,45 @@ def plot_model_gap(time: np.ndarray, absolute_gap: np.ndarray, relative_gap: np.
     ax2.grid(alpha=0.25)
 
     plt.tight_layout()
+
+
+def plot_result_dashboard(
+    summary_metrics: dict[str, float],
+    perturbation_peaks: dict[str, float],
+    title: str = "RF3BP Demo Result Snapshot",
+) -> None:
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11.2, 4.8))
+
+    labels = list(perturbation_peaks.keys())
+    values = np.array([perturbation_peaks[k] for k in labels], dtype=float)
+    ax1.bar(labels, values, color=["#9b2226", "#ca6702", "#005f73", "#0a9396"])
+    ax1.set_yscale("log")
+    ax1.set_ylabel("peak acceleration norm")
+    ax1.set_title("Peak Perturbation Magnitudes")
+    ax1.grid(alpha=0.25, axis="y")
+
+    ax2.axis("off")
+    lines = [
+        f"period = {summary_metrics['period']:.6f}",
+        f"residual_norm = {summary_metrics['residual_norm']:.3e}",
+        f"stage1_cost = {summary_metrics['stage1_cost']:.3e}",
+        f"final_cost = {summary_metrics['final_cost']:.3e}",
+        f"max_abs_gap = {summary_metrics['max_abs_gap']:.3e}",
+        f"max_rel_gap = {summary_metrics['max_rel_gap']:.3e}",
+        f"mean_abs_gap = {summary_metrics['mean_abs_gap']:.3e}",
+        f"mean_rel_gap = {summary_metrics['mean_rel_gap']:.3e}",
+    ]
+    ax2.text(
+        0.02,
+        0.98,
+        "\n".join(lines),
+        va="top",
+        ha="left",
+        family="monospace",
+        fontsize=10,
+        bbox={"boxstyle": "round,pad=0.5", "facecolor": "#f5f5f5", "edgecolor": "#cccccc"},
+    )
+    ax2.set_title("Key Metrics (Default Seed)")
+
+    fig.suptitle(title)
+    plt.tight_layout()
