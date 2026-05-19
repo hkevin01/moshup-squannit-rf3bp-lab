@@ -38,13 +38,13 @@ This project gives you a compact environment to answer questions like:
 
 ## Executive Summary
 
-| Topic | What It Is | What It Does | Why It Matters |
+| <sub>Topic</sub> | <sub>What It Is</sub> | <sub>What It Does</sub> | <sub>Why It Matters</sub> |
 | --- | --- | --- | --- |
-| CR3BP baseline | Circular restricted 3-body model in a rotating frame | Supplies a low-cost reference orbit model | Good starting point for initial guesses |
-| RF3BP-inspired dynamics | Higher-fidelity pulsating-rotating model | Adds pulsation, nonspherical gravity, solar gravity, and SRP | Closer to binary-asteroid mission reality |
-| Potential-derivative kinematics | Secondary relative acceleration and jerk estimate from a potential derivative view | Explicitly models nonuniform pulsation terms | Makes pulsation effects visible in the equations |
-| Hierarchical continuation | Staged shooting from CR3BP to higher fidelity | Transfers a seed orbit across models | Avoids solving the hardest model from scratch |
-| Diagnostics | Trajectory and perturbation plots | Shows which effects dominate and where | Useful for analysis, papers, and design iteration |
+| <sub>CR3BP baseline</sub> | <sub>Circular restricted 3-body model in a rotating frame</sub> | <sub>Supplies a low-cost reference orbit model</sub> | <sub>Good starting point for initial guesses</sub> |
+| <sub>RF3BP-inspired dynamics</sub> | <sub>Higher-fidelity pulsating-rotating model</sub> | <sub>Adds pulsation, nonspherical gravity, solar gravity, and SRP</sub> | <sub>Closer to binary-asteroid mission reality</sub> |
+| <sub>Potential-derivative kinematics</sub> | <sub>Secondary relative acceleration and jerk estimate from a potential derivative view</sub> | <sub>Explicitly models nonuniform pulsation terms</sub> | <sub>Makes pulsation effects visible in the equations</sub> |
+| <sub>Hierarchical continuation</sub> | <sub>Staged shooting from CR3BP to higher fidelity</sub> | <sub>Transfers a seed orbit across models</sub> | <sub>Avoids solving the hardest model from scratch</sub> |
+| <sub>Diagnostics</sub> | <sub>Trajectory and perturbation plots</sub> | <sub>Shows which effects dominate and where</sub> | <sub>Useful for analysis, papers, and design iteration</sub> |
 
 ## RF3BP vs CR3BP - What Is The Difference?
 
@@ -52,13 +52,13 @@ This project gives you a compact environment to answer questions like:
 
 **Restricted Full 3-Body Problem (RF3BP)** extends CR3BP by allowing the primary-secondary separation to pulsate (vary with time), and by accounting for higher-fidelity perturbations. CR3BP and RF3BP are not competing "brands" of the same equation - they represent fundamentally different physical assumptions.
 
-| Aspect | CR3BP | RF3BP (this lab) | Practical Consequence |
+| <sub>Aspect</sub> | <sub>CR3BP</sub> | <sub>RF3BP (this lab)</sub> | <sub>Practical Consequence</sub> |
 | --- | --- | --- | --- |
-| Primary-secondary distance | Constant | Time-varying (pulsating) | Adds nonuniform frame terms and shifts equilibrium structure |
-| Gravity field shape | Point masses only | Point masses + J2-like nonspherical corrections | Local accelerations can deviate strongly near bodies |
-| External forcing | None | Solar third-body differential gravity + SRP | Long-time bounded motion is more sensitive |
-| Frame model | Uniform rotating frame | Pulsating-rotating frame with explicit pulsation terms | CR3BP intuition can fail as fidelity increases |
-| Design workflow | Often direct periodic-orbit correction | Hierarchical continuation from low to high fidelity | Better robustness when full model is stiff |
+| <sub>Primary-secondary distance</sub> | <sub>Constant</sub> | <sub>Time-varying (pulsating)</sub> | <sub>Adds nonuniform frame terms and shifts equilibrium structure</sub> |
+| <sub>Gravity field shape</sub> | <sub>Point masses only</sub> | <sub>Point masses + J2-like nonspherical corrections</sub> | <sub>Local accelerations can deviate strongly near bodies</sub> |
+| <sub>External forcing</sub> | <sub>None</sub> | <sub>Solar third-body differential gravity + SRP</sub> | <sub>Long-time bounded motion is more sensitive</sub> |
+| <sub>Frame model</sub> | <sub>Uniform rotating frame</sub> | <sub>Pulsating-rotating frame with explicit pulsation terms</sub> | <sub>CR3BP intuition can fail as fidelity increases</sub> |
+| <sub>Design workflow</sub> | <sub>Often direct periodic-orbit correction</sub> | <sub>Hierarchical continuation from low to high fidelity</sub> | <sub>Better robustness when full model is stiff</sub> |
 
 In the rotating frame, the **CR3BP** acceleration can be summarized as:
 
@@ -94,21 +94,21 @@ This gives a direct, quantitative answer to "how far from CR3BP" a trajectory po
 
 ### RF3BP vs CR3BP
 
-| CR3BP Reference | RF3BP Higher Fidelity |
+| <sub>CR3BP Reference</sub> | <sub>RF3BP Higher Fidelity</sub> |
 | --- | --- |
-| ![CR3BP](docs/figures/trajectory_cr3bp.png) | ![RF3BP](docs/figures/trajectory_rf3bp.png) |
+| <sub>![CR3BP](docs/figures/trajectory_cr3bp.png)</sub> | <sub>![RF3BP](docs/figures/trajectory_rf3bp.png)</sub> |
 
 ### Perturbation Diagnostics
 
-| Perturbation Magnitudes | Continuation Convergence |
+| <sub>Perturbation Magnitudes</sub> | <sub>Continuation Convergence</sub> |
 | --- | --- |
-| ![Perturbations](docs/figures/perturbation_norms.png) | ![Continuation](docs/figures/continuation_convergence.png) |
+| <sub>![Perturbations](docs/figures/perturbation_norms.png)</sub> | <sub>![Continuation](docs/figures/continuation_convergence.png)</sub> |
 
 ### Model Difference Diagnostics
 
-| RF3BP vs CR3BP Gap History |
+| <sub>RF3BP vs CR3BP Gap History</sub> |
 | --- |
-| ![Model Gap](docs/figures/model_gap_cr3bp_vs_rf3bp.png) |
+| <sub>![Model Gap](docs/figures/model_gap_cr3bp_vs_rf3bp.png)</sub> |
 
 ## Latest Produced Results (Default Seed)
 
@@ -121,22 +121,22 @@ OUTPUT_DIR=docs/figures ./.venv/bin/python scripts/run_demo.py
 The demo now prioritizes a visual snapshot screenshot with labeled panels, trend cues, and highlighted mission indicators.
 Machine-readable metrics are still exported to `docs/results/latest_demo_metrics.json` for automated post-processing.
 
-| Metric | Value | Context |
+| <sub>Metric</sub> | <sub>Value</sub> | <sub>Context</sub> |
 | --- | --- | --- |
-| Period estimate | `6.329724` | Final continuation period estimate returned by the shooter |
-| Final residual norm | `5.749e+00` | Periodicity defect for the final continuation stage |
-| Stage-1 cost | `3.805e-02` | Cost right after CR3BP correction |
-| Final stage cost | `1.653e+01` | Cost at full model fidelity |
-| Max absolute model gap | `1.986e+14` | Peak value of $\|a_{RF3BP} - a_{CR3BP}\|$ along propagated path |
-| Mean relative model gap | `4.323e-01` | Mean of $\|\Delta a\| / \|a_{CR3BP}\|$ over 4000 samples |
-| Max relative model gap | `7.471e-01` | Peak normalized mismatch between RF3BP and CR3BP |
+| <sub>Period estimate</sub> | <sub>`6.329724`</sub> | <sub>Final continuation period estimate returned by the shooter</sub> |
+| <sub>Final residual norm</sub> | <sub>`5.749e+00`</sub> | <sub>Periodicity defect for the final continuation stage</sub> |
+| <sub>Stage-1 cost</sub> | <sub>`3.805e-02`</sub> | <sub>Cost right after CR3BP correction</sub> |
+| <sub>Final stage cost</sub> | <sub>`1.653e+01`</sub> | <sub>Cost at full model fidelity</sub> |
+| <sub>Max absolute model gap</sub> | <sub>`1.986e+14`</sub> | <sub>Peak value of $\</sub> | <sub>a_{RF3BP} - a_{CR3BP}\</sub> | <sub>$ along propagated path</sub> |
+| <sub>Mean relative model gap</sub> | <sub>`4.323e-01`</sub> | <sub>Mean of $\</sub> | <sub>\Delta a\</sub> | <sub>/ \</sub> | <sub>a_{CR3BP}\</sub> | <sub>$ over 4000 samples</sub> |
+| <sub>Max relative model gap</sub> | <sub>`7.471e-01`</sub> | <sub>Peak normalized mismatch between RF3BP and CR3BP</sub> |
 
 > [!NOTE]
 > The very large absolute peak reflects the current simplified pulsation formulation and sampling near strong local gradients. For design decisions, relative gap trends and component-wise diagnostics are usually more informative than a single absolute peak.
 
-| Result Snapshot Dashboard |
+| <sub>Result Snapshot Dashboard</sub> |
 | --- |
-| ![Result Snapshot](docs/figures/result_snapshot_dashboard.png) |
+| <sub>![Result Snapshot](docs/figures/result_snapshot_dashboard.png)</sub> |
 
 This dashboard now uses visual aids (annotated bars, continuation trend panel, labeled metric cards, and gap indicators), so each demo run yields a screenshot that can be interpreted quickly without reading raw JSON.
 
@@ -163,13 +163,13 @@ flowchart TD
 
 ## Model Fidelity Ladder
 
-| Stage | Enabled Physics | Purpose | Computational Role |
+| <sub>Stage</sub> | <sub>Enabled Physics</sub> | <sub>Purpose</sub> | <sub>Computational Role</sub> |
 | --- | --- | --- | --- |
-| 0 | CR3BP only | Correct the seed in the simplest useful model | Fast, stable initialization |
-| 1 | Pulsation | Turn on nonuniform separation effects | Measures the cost of leaving circular assumptions |
-| 2 | Pulsation + nonspherical gravity | Add J2-like gravity corrections | Introduces body-shape-driven local distortion |
-| 3 | Pulsation + nonspherical gravity + solar gravity | Add differential third-body forcing | Captures long-baseline solar perturbation |
-| 4 | Full model + SRP | Add light-pressure acceleration | Approximates small-spacecraft sensitivity |
+| <sub>0</sub> | <sub>CR3BP only</sub> | <sub>Correct the seed in the simplest useful model</sub> | <sub>Fast, stable initialization</sub> |
+| <sub>1</sub> | <sub>Pulsation</sub> | <sub>Turn on nonuniform separation effects</sub> | <sub>Measures the cost of leaving circular assumptions</sub> |
+| <sub>2</sub> | <sub>Pulsation + nonspherical gravity</sub> | <sub>Add J2-like gravity corrections</sub> | <sub>Introduces body-shape-driven local distortion</sub> |
+| <sub>3</sub> | <sub>Pulsation + nonspherical gravity + solar gravity</sub> | <sub>Add differential third-body forcing</sub> | <sub>Captures long-baseline solar perturbation</sub> |
+| <sub>4</sub> | <sub>Full model + SRP</sub> | <sub>Add light-pressure acceleration</sub> | <sub>Approximates small-spacecraft sensitivity</sub> |
 
 ## Core Algorithms
 
@@ -219,62 +219,62 @@ The current implementation uses an explicit bounded, damped Newton-style correct
 
 ## What Is Implemented vs What Is Approximated
 
-| Area | Current Implementation | Why This Choice Was Made | Upgrade Path |
+| <sub>Area</sub> | <sub>Current Implementation</sub> | <sub>Why This Choice Was Made</sub> | <sub>Upgrade Path</sub> |
 | --- | --- | --- | --- |
-| Binary geometry | Normalized separation with pulsation law | Keeps the frame mechanics explicit and inspectable | Replace with shape/ephemeris-driven relative motion |
-| Nonspherical gravity | J2-like correction for both bodies | Lightweight proxy for body asymmetry | Polyhedral gravity from shape models |
-| Solar perturbation | Simplified moving-Sun differential gravity | Good comparative forcing term | SPICE or ephemeris-driven Sun state |
-| SRP | Constant-magnitude directional SRP | Lets perturbation ranking be studied quickly | Area-to-mass, attitude, eclipse, optical model |
-| Continuation | Single-shooting staged correction | Small code footprint, good for experimentation | Multi-shooting and collocation |
+| <sub>Binary geometry</sub> | <sub>Normalized separation with pulsation law</sub> | <sub>Keeps the frame mechanics explicit and inspectable</sub> | <sub>Replace with shape/ephemeris-driven relative motion</sub> |
+| <sub>Nonspherical gravity</sub> | <sub>J2-like correction for both bodies</sub> | <sub>Lightweight proxy for body asymmetry</sub> | <sub>Polyhedral gravity from shape models</sub> |
+| <sub>Solar perturbation</sub> | <sub>Simplified moving-Sun differential gravity</sub> | <sub>Good comparative forcing term</sub> | <sub>SPICE or ephemeris-driven Sun state</sub> |
+| <sub>SRP</sub> | <sub>Constant-magnitude directional SRP</sub> | <sub>Lets perturbation ranking be studied quickly</sub> | <sub>Area-to-mass, attitude, eclipse, optical model</sub> |
+| <sub>Continuation</sub> | <sub>Single-shooting staged correction</sub> | <sub>Small code footprint, good for experimentation</sub> | <sub>Multi-shooting and collocation</sub> |
 
 ## Why These Methods Fit This Problem
 
-| Method | Why It Fits Moshup-Squannit Orbit Studies | Main Limitation |
+| <sub>Method</sub> | <sub>Why It Fits Moshup-Squannit Orbit Studies</sub> | <sub>Main Limitation</sub> |
 | --- | --- | --- |
-| CR3BP seed generation | Gives a structured initial orbit family around a binary system | Ignores pulsation and realistic perturbations |
-| Pulsating-rotating frame | Directly expresses time-varying mutual separation effects | Requires care when comparing against static-frame intuition |
-| J2-like gravity proxy | Cheap way to inject dominant nonspherical trends | Too simple for strongly irregular bodies |
-| Hierarchical continuation | Practical way to migrate a low-fidelity orbit into higher fidelity | Can still fail if the seed is too weak |
-| Perturbation breakdown plots | Turns model complexity into interpretable evidence | Diagnostic, not an optimization method |
+| <sub>CR3BP seed generation</sub> | <sub>Gives a structured initial orbit family around a binary system</sub> | <sub>Ignores pulsation and realistic perturbations</sub> |
+| <sub>Pulsating-rotating frame</sub> | <sub>Directly expresses time-varying mutual separation effects</sub> | <sub>Requires care when comparing against static-frame intuition</sub> |
+| <sub>J2-like gravity proxy</sub> | <sub>Cheap way to inject dominant nonspherical trends</sub> | <sub>Too simple for strongly irregular bodies</sub> |
+| <sub>Hierarchical continuation</sub> | <sub>Practical way to migrate a low-fidelity orbit into higher fidelity</sub> | <sub>Can still fail if the seed is too weak</sub> |
+| <sub>Perturbation breakdown plots</sub> | <sub>Turns model complexity into interpretable evidence</sub> | <sub>Diagnostic, not an optimization method</sub> |
 
 ## Alternatives Compared
 
-| Approach | Strengths | Weaknesses | When To Use It Instead |
+| <sub>Approach</sub> | <sub>Strengths</sub> | <sub>Weaknesses</sub> | <sub>When To Use It Instead</sub> |
 | --- | --- | --- | --- |
-| Pure CR3BP | Fast, interpretable, classical | Too idealized for close binary-asteroid work | Early concept design or teaching |
-| This repository | Good balance between insight and implementation cost | Several effects are still approximated | Algorithm research and rapid trade studies |
-| Full polyhedral gravity + SPICE + eclipse + attitude model | Highest physical fidelity | Much more data and engineering overhead | Mission-grade analysis and detailed navigation studies |
-| Direct black-box optimization in full fidelity | Can find solutions missed by continuation | Expensive and brittle without good seeds | Late-stage global search after good priors exist |
+| <sub>Pure CR3BP</sub> | <sub>Fast, interpretable, classical</sub> | <sub>Too idealized for close binary-asteroid work</sub> | <sub>Early concept design or teaching</sub> |
+| <sub>This repository</sub> | <sub>Good balance between insight and implementation cost</sub> | <sub>Several effects are still approximated</sub> | <sub>Algorithm research and rapid trade studies</sub> |
+| <sub>Full polyhedral gravity + SPICE + eclipse + attitude model</sub> | <sub>Highest physical fidelity</sub> | <sub>Much more data and engineering overhead</sub> | <sub>Mission-grade analysis and detailed navigation studies</sub> |
+| <sub>Direct black-box optimization in full fidelity</sub> | <sub>Can find solutions missed by continuation</sub> | <sub>Expensive and brittle without good seeds</sub> | <sub>Late-stage global search after good priors exist</sub> |
 
 ## Repository Map
 
-| Path | What It Is | What It Does |
+| <sub>Path</sub> | <sub>What It Is</sub> | <sub>What It Does</sub> |
 | --- | --- | --- |
-| `src/rf3bp_lab/dynamics/params.py` | Parameter container | Holds normalized and physical scale assumptions |
-| `src/rf3bp_lab/dynamics/models.py` | Core dynamics engine | Implements CR3BP, RF3BP-inspired dynamics, perturbation breakdown, and propagation |
-| `src/rf3bp_lab/shooting/hierarchical.py` | Continuation solver | Performs staged bounded-orbit correction across model fidelity levels |
-| `src/rf3bp_lab/utils/plotting.py` | Visualization utilities | Builds trajectory and perturbation charts |
-| `scripts/run_demo.py` | End-to-end demo | Runs continuation, propagation, and plot generation |
-| `tests/` | Validation layer | Confirms basic dynamics and shooter behavior |
-| `docs/figures/` | Generated artifacts | Stores README-embeddable charts |
+| <sub>`src/rf3bp_lab/dynamics/params.py`</sub> | <sub>Parameter container</sub> | <sub>Holds normalized and physical scale assumptions</sub> |
+| <sub>`src/rf3bp_lab/dynamics/models.py`</sub> | <sub>Core dynamics engine</sub> | <sub>Implements CR3BP, RF3BP-inspired dynamics, perturbation breakdown, and propagation</sub> |
+| <sub>`src/rf3bp_lab/shooting/hierarchical.py`</sub> | <sub>Continuation solver</sub> | <sub>Performs staged bounded-orbit correction across model fidelity levels</sub> |
+| <sub>`src/rf3bp_lab/utils/plotting.py`</sub> | <sub>Visualization utilities</sub> | <sub>Builds trajectory and perturbation charts</sub> |
+| <sub>`scripts/run_demo.py`</sub> | <sub>End-to-end demo</sub> | <sub>Runs continuation, propagation, and plot generation</sub> |
+| <sub>`tests/`</sub> | <sub>Validation layer</sub> | <sub>Confirms basic dynamics and shooter behavior</sub> |
+| <sub>`docs/figures/`</sub> | <sub>Generated artifacts</sub> | <sub>Stores README-embeddable charts</sub> |
 
 ## Default Moshup-Squannit Assumptions
 
 The defaults are intentionally transparent and easy to refine.
 
-| Parameter | Default | Meaning |
+| <sub>Parameter</sub> | <sub>Default</sub> | <sub>Meaning</sub> |
 | --- | --- | --- |
-| `mu` | `0.02` | Normalized binary mass ratio used by the sandbox |
-| `r12_mean_m` | `2500.0` m | Mean mutual separation |
-| `pulsation_e` | `0.08` | Pulsation amplitude parameter |
-| `pulsation_nu` | `0.35` | Pulsation frequency scale |
-| `j2_primary` | `0.05` | J2-like primary gravity coefficient |
-| `j2_secondary` | `0.02` | J2-like secondary gravity coefficient |
-| `r_primary_m` | `700.0` m | Primary scale radius |
-| `r_secondary_m` | `225.0` m | Secondary scale radius |
-| `sun_mu_scaled` | `5.0e-4` | Normalized solar gravity strength |
-| `sun_distance_scaled` | `2000.0` | Normalized Sun distance |
-| `srp_accel_scaled` | `2.5e-6` | Normalized SRP acceleration |
+| <sub>`mu`</sub> | <sub>`0.02`</sub> | <sub>Normalized binary mass ratio used by the sandbox</sub> |
+| <sub>`r12_mean_m`</sub> | <sub>`2500.0` m</sub> | <sub>Mean mutual separation</sub> |
+| <sub>`pulsation_e`</sub> | <sub>`0.08`</sub> | <sub>Pulsation amplitude parameter</sub> |
+| <sub>`pulsation_nu`</sub> | <sub>`0.35`</sub> | <sub>Pulsation frequency scale</sub> |
+| <sub>`j2_primary`</sub> | <sub>`0.05`</sub> | <sub>J2-like primary gravity coefficient</sub> |
+| <sub>`j2_secondary`</sub> | <sub>`0.02`</sub> | <sub>J2-like secondary gravity coefficient</sub> |
+| <sub>`r_primary_m`</sub> | <sub>`700.0` m</sub> | <sub>Primary scale radius</sub> |
+| <sub>`r_secondary_m`</sub> | <sub>`225.0` m</sub> | <sub>Secondary scale radius</sub> |
+| <sub>`sun_mu_scaled`</sub> | <sub>`5.0e-4`</sub> | <sub>Normalized solar gravity strength</sub> |
+| <sub>`sun_distance_scaled`</sub> | <sub>`2000.0`</sub> | <sub>Normalized Sun distance</sub> |
+| <sub>`srp_accel_scaled`</sub> | <sub>`2.5e-6`</sub> | <sub>Normalized SRP acceleration</sub> |
 
 > [!TIP]
 > If you want the quickest improvement in physical realism, replace the J2-style terms first. For small irregular binaries, that simplification is usually the biggest structural gap.
@@ -311,12 +311,12 @@ sequenceDiagram
 
 ## Current Validation Status
 
-| Check | Result | Notes |
+| <sub>Check</sub> | <sub>Result</sub> | <sub>Notes</sub> |
 | --- | --- | --- |
-| Dynamics unit tests | Passing | Confirms finite outputs and weighted perturbation behavior |
-| Shooting unit test | Passing | Confirms continuation path returns a valid result quickly |
-| Full test suite | Passing | `5 passed` |
-| Demo run | Passing | Generates four figures in `docs/figures/` |
+| <sub>Dynamics unit tests</sub> | <sub>Passing</sub> | <sub>Confirms finite outputs and weighted perturbation behavior</sub> |
+| <sub>Shooting unit test</sub> | <sub>Passing</sub> | <sub>Confirms continuation path returns a valid result quickly</sub> |
+| <sub>Full test suite</sub> | <sub>Passing</sub> | <sub>`5 passed`</sub> |
+| <sub>Demo run</sub> | <sub>Passing</sub> | <sub>Generates four figures in `docs/figures/`</sub> |
 
 ## Practical Notes
 
@@ -326,12 +326,12 @@ sequenceDiagram
 
 ## Development Commands
 
-| Task | Command |
+| <sub>Task</sub> | <sub>Command</sub> |
 | --- | --- |
-| Install project | `./.venv/bin/python -m pip install -e .[dev]` |
-| Run tests | `./.venv/bin/python -m pytest -q` |
-| Run only shooting test | `./.venv/bin/python -m pytest -q tests/test_shooting.py` |
-| Regenerate figures | `OUTPUT_DIR=docs/figures ./.venv/bin/python scripts/run_demo.py` |
+| <sub>Install project</sub> | <sub>`./.venv/bin/python -m pip install -e .[dev]`</sub> |
+| <sub>Run tests</sub> | <sub>`./.venv/bin/python -m pytest -q`</sub> |
+| <sub>Run only shooting test</sub> | <sub>`./.venv/bin/python -m pytest -q tests/test_shooting.py`</sub> |
+| <sub>Regenerate figures</sub> | <sub>`OUTPUT_DIR=docs/figures ./.venv/bin/python scripts/run_demo.py`</sub> |
 
 Generated outputs include `model_gap_cr3bp_vs_rf3bp.png`, which visualizes both absolute and relative acceleration mismatch history.
 
@@ -493,32 +493,32 @@ Provides complete navigation uncertainty workflow:
 
 ## Roadmap
 
-| Priority | Upgrade | Expected Benefit | Status |
+| <sub>Priority</sub> | <sub>Upgrade</sub> | <sub>Expected Benefit</sub> | <sub>Status</sub> |
 | --- | --- | --- | --- |
-| High | Polyhedral gravity (polyhedron model integration) | Much better local field realism near both bodies | Future |
-| High | Multi-shooting continuation | Better robustness for long bounded arcs | ✅ **Implemented** |
-| High | SPICE-driven Sun geometry | Better solar forcing fidelity | Future |
-| Medium | Family continuation and branch tracking | Better orbit atlas generation | ✅ **Implemented** |
-| Medium | Event surfaces and Poincare diagnostics | Better structure discovery | Future |
-| Medium | Eclipsing and attitude-sensitive SRP | Better small-spacecraft realism | ✅ **Implemented** |
-| Low | Formal optimization over orbit families | Systematic mission design automation | ✅ **Implemented** |
-| Low | Mission-grade navigation covariance analysis | Flight-readiness trajectory analysis | ✅ **Implemented** |
-| Low | High-order irregular-body gravity | Better fidelity for shaped asteroids | ✅ **Implemented** |
+| <sub>High</sub> | <sub>Polyhedral gravity (polyhedron model integration)</sub> | <sub>Much better local field realism near both bodies</sub> | <sub>Future</sub> |
+| <sub>High</sub> | <sub>Multi-shooting continuation</sub> | <sub>Better robustness for long bounded arcs</sub> | <sub>✅ **Implemented**</sub> |
+| <sub>High</sub> | <sub>SPICE-driven Sun geometry</sub> | <sub>Better solar forcing fidelity</sub> | <sub>Future</sub> |
+| <sub>Medium</sub> | <sub>Family continuation and branch tracking</sub> | <sub>Better orbit atlas generation</sub> | <sub>✅ **Implemented**</sub> |
+| <sub>Medium</sub> | <sub>Event surfaces and Poincare diagnostics</sub> | <sub>Better structure discovery</sub> | <sub>Future</sub> |
+| <sub>Medium</sub> | <sub>Eclipsing and attitude-sensitive SRP</sub> | <sub>Better small-spacecraft realism</sub> | <sub>✅ **Implemented**</sub> |
+| <sub>Low</sub> | <sub>Formal optimization over orbit families</sub> | <sub>Systematic mission design automation</sub> | <sub>✅ **Implemented**</sub> |
+| <sub>Low</sub> | <sub>Mission-grade navigation covariance analysis</sub> | <sub>Flight-readiness trajectory analysis</sub> | <sub>✅ **Implemented**</sub> |
+| <sub>Low</sub> | <sub>High-order irregular-body gravity</sub> | <sub>Better fidelity for shaped asteroids</sub> | <sub>✅ **Implemented**</sub> |
 
 ## References and Context
 
 The model and algorithms in this lab are anchored to real literature. Most links below use DOI resolver URLs so they remain stable even when publisher front-ends change.
 
-| Topic | Reference | What It Supports in This Repo |
+| <sub>Topic</sub> | <sub>Reference</sub> | <sub>What It Supports in This Repo</sub> |
 | --- | --- | --- |
-| RF3BP near binary asteroids (primary inspiration) | Lu, J., Shang, H., Liu, C., Zhang, X., Gao, A. (2026). General Dynamics of Restricted Full Three-Body Problem Near Binary Asteroid System. *Journal of Guidance, Control, and Dynamics*. [https://doi.org/10.2514/1.G009686](https://doi.org/10.2514/1.G009686) | Pulsating-rotating RF3BP framing, perturbation hierarchy, and continuation motivation |
-| Moshup-Squannit physical system observations | Ostro, S. J., Margot, J.-L., Benner, L. A. M., et al. (2006). Radar Imaging of Binary Near-Earth Asteroid (66391) 1999 KW4. *Science*, 314(5803), 1276-1280. [https://doi.org/10.1126/science.1133622](https://doi.org/10.1126/science.1133622) | Binary geometry context and observed KW4 dynamical characteristics |
-| Binary asteroid full-problem dynamics | Fahnestock, E. G., Scheeres, D. J. (2008). Simulation and analysis of the dynamics of binary near-Earth asteroid (66391) 1999 KW4. *Icarus*, 194(2), 410-435. [https://doi.org/10.1016/j.icarus.2007.11.007](https://doi.org/10.1016/j.icarus.2007.11.007) | Small-body binary dynamics baseline and comparable perturbation scales |
-| Full two-body stability theory | Scheeres, D. J. (2009). Stability of the planar full 2-body problem. *Celestial Mechanics and Dynamical Astronomy*, 104, 103-128. [https://doi.org/10.1007/s10569-009-9184-7](https://doi.org/10.1007/s10569-009-9184-7) | Conceptual bridge between restricted and full-body stability behavior |
-| CR3BP mission-design continuation practice | Koon, W. S., Lo, M. W., Marsden, J. E., Ross, S. D. (2001). Low Energy Transfer to the Moon. *Celestial Mechanics and Dynamical Astronomy*, 81, 63-73. [https://doi.org/10.1023/A:1013359120468](https://doi.org/10.1023/A:1013359120468) | Continuation and shooting-style trajectory construction mindset |
-| Foundational CR3BP text | Szebehely, V. (1967). *Theory of Orbits: The Restricted Problem of Three Bodies*. Academic Press. (Book cited in many modern CR3BP papers; review DOI: [https://doi.org/10.1119/1.1974535](https://doi.org/10.1119/1.1974535)) | Canonical rotating-frame CR3BP equations and integrals |
-| Numerical integration basis (embedded RK) | Dormand, J. R., Prince, P. J. (1980). A family of embedded Runge-Kutta formulae. *Journal of Computational and Applied Mathematics*, 6(1), 19-26. [https://doi.org/10.1016/0771-050X(80)90013-3](https://doi.org/10.1016/0771-050X(80)90013-3) | The accuracy-control lineage behind high-order RK propagation choices |
-| Software stack reference (SciPy) | Virtanen, P., Gommers, R., Oliphant, T. E., et al. (2020). SciPy 1.0: fundamental algorithms for scientific computing in Python. *Nature Methods*, 17, 261-272. [https://doi.org/10.1038/s41592-019-0686-2](https://doi.org/10.1038/s41592-019-0686-2) | Scientific-computing implementation context for solve_ivp and linear algebra tooling |
+| <sub>RF3BP near binary asteroids (primary inspiration)</sub> | <sub>Lu, J., Shang, H., Liu, C., Zhang, X., Gao, A. (2026). General Dynamics of Restricted Full Three-Body Problem Near Binary Asteroid System. *Journal of Guidance, Control, and Dynamics*. [https://doi.org/10.2514/1.G009686](https://doi.org/10.2514/1.G009686)</sub> | <sub>Pulsating-rotating RF3BP framing, perturbation hierarchy, and continuation motivation</sub> |
+| <sub>Moshup-Squannit physical system observations</sub> | <sub>Ostro, S. J., Margot, J.-L., Benner, L. A. M., et al. (2006). Radar Imaging of Binary Near-Earth Asteroid (66391) 1999 KW4. *Science*, 314(5803), 1276-1280. [https://doi.org/10.1126/science.1133622](https://doi.org/10.1126/science.1133622)</sub> | <sub>Binary geometry context and observed KW4 dynamical characteristics</sub> |
+| <sub>Binary asteroid full-problem dynamics</sub> | <sub>Fahnestock, E. G., Scheeres, D. J. (2008). Simulation and analysis of the dynamics of binary near-Earth asteroid (66391) 1999 KW4. *Icarus*, 194(2), 410-435. [https://doi.org/10.1016/j.icarus.2007.11.007](https://doi.org/10.1016/j.icarus.2007.11.007)</sub> | <sub>Small-body binary dynamics baseline and comparable perturbation scales</sub> |
+| <sub>Full two-body stability theory</sub> | <sub>Scheeres, D. J. (2009). Stability of the planar full 2-body problem. *Celestial Mechanics and Dynamical Astronomy*, 104, 103-128. [https://doi.org/10.1007/s10569-009-9184-7](https://doi.org/10.1007/s10569-009-9184-7)</sub> | <sub>Conceptual bridge between restricted and full-body stability behavior</sub> |
+| <sub>CR3BP mission-design continuation practice</sub> | <sub>Koon, W. S., Lo, M. W., Marsden, J. E., Ross, S. D. (2001). Low Energy Transfer to the Moon. *Celestial Mechanics and Dynamical Astronomy*, 81, 63-73. [https://doi.org/10.1023/A:1013359120468](https://doi.org/10.1023/A:1013359120468)</sub> | <sub>Continuation and shooting-style trajectory construction mindset</sub> |
+| <sub>Foundational CR3BP text</sub> | <sub>Szebehely, V. (1967). *Theory of Orbits: The Restricted Problem of Three Bodies*. Academic Press. (Book cited in many modern CR3BP papers; review DOI: [https://doi.org/10.1119/1.1974535](https://doi.org/10.1119/1.1974535))</sub> | <sub>Canonical rotating-frame CR3BP equations and integrals</sub> |
+| <sub>Numerical integration basis (embedded RK)</sub> | <sub>Dormand, J. R., Prince, P. J. (1980). A family of embedded Runge-Kutta formulae. *Journal of Computational and Applied Mathematics*, 6(1), 19-26. [https://doi.org/10.1016/0771-050X(80)90013-3](https://doi.org/10.1016/0771-050X(80)90013-3)</sub> | <sub>The accuracy-control lineage behind high-order RK propagation choices</sub> |
+| <sub>Software stack reference (SciPy)</sub> | <sub>Virtanen, P., Gommers, R., Oliphant, T. E., et al. (2020). SciPy 1.0: fundamental algorithms for scientific computing in Python. *Nature Methods*, 17, 261-272. [https://doi.org/10.1038/s41592-019-0686-2](https://doi.org/10.1038/s41592-019-0686-2)</sub> | <sub>Scientific-computing implementation context for solve_ivp and linear algebra tooling</sub> |
 
 > [!NOTE]
 > Some publisher pages are paywalled or bot-protected in this execution environment. DOI resolver links above are real and were verified via open Crossref metadata.
