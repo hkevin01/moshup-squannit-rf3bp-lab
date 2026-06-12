@@ -1,5 +1,18 @@
 from __future__ import annotations
 
+# ---------------------------------------------------------------------------
+# Ensure the src/ directory is on the Python path when this script is run
+# directly (e.g. from IDLE, Explorer double-click, or without pip install).
+# ---------------------------------------------------------------------------
+import pathlib
+import sys
+
+_repo_root = pathlib.Path(__file__).resolve().parent.parent
+_src = _repo_root / "src"
+if str(_src) not in sys.path:
+    sys.path.insert(0, str(_src))
+# ---------------------------------------------------------------------------
+
 import json
 import os
 

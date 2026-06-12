@@ -14,6 +14,40 @@ The project implements advanced astrodynamics techniques including:
 - State Transition Matrix (STM) propagation for mission-grade navigation covariance analysis
 - Eclipse-aware Solar Radiation Pressure (SRP) and harmonic gravity expansions
 
+## Getting Started
+
+### Requirements
+
+- Python 3.11 or newer (3.13 works fine)
+- Windows, macOS, or Linux
+
+### Option A - Install the package (recommended)
+
+Open a terminal / Command Prompt in the project root and run:
+
+```bash
+pip install -e .
+```
+
+Then run the demo:
+
+```bash
+python scripts/run_demo.py
+```
+
+### Option B - Run directly without installing (IDLE, Explorer double-click, etc.)
+
+No extra steps needed. The script auto-adds its own `src/` directory to `sys.path` at startup, so you can open `scripts/run_demo.py` in IDLE and press **Run** (F5) without installing anything first.
+
+### Install with dev/test extras
+
+```bash
+pip install -e .[dev]
+python -m pytest
+```
+
+---
+
 This repository does not try to be a CLI-heavy wrapper. The main value is the **dynamics code**, the **hierarchical shooting continuation logic**, and the **diagnostic plots** that help compare perturbation sources in the neighborhood of a binary asteroid.
 
 > [!IMPORTANT]
