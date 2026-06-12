@@ -158,7 +158,7 @@ def trace_orbit_family(
         if config.objective_func is not None:
             try:
                 obj_value = config.objective_func(corrected_state, p)
-            except:
+            except Exception:
                 obj_value = None
         
         point = OrbitFamilyPoint(

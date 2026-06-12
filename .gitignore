@@ -17,3 +17,7 @@ dist/
 .env
 .idea/
 .vscode/
+
+# Generated figure outputs - run scripts/run_demo.py to regenerate
+docs/figures/*.png
+docs/results/*.json

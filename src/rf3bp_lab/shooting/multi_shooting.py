@@ -128,8 +128,9 @@ class MultiShootingBVP:
                 state0 = states[i].copy()
                 
                 # Propagate arc
+                _fw = fidelity
                 result = propagate(
-                    lambda t, y, p: rf3bp_pulsating_rhs_weighted(t, y, p, fidelity),
+                    lambda t, y, _p, _fw=_fw: rf3bp_pulsating_rhs_weighted(t, y, _p, _fw),
                     state0,
                     t_span,
                     self.params,
@@ -137,7 +138,7 @@ class MultiShootingBVP:
                     rtol=self.config.integrator_rtol,
                     atol=self.config.integrator_atol,
                 )
-                
+
                 final_state = result.y[:, -1] if result.success else state0
                 residual = final_state - states[(i + 1) % n_arcs]  # Continuity residual
                 
@@ -180,8 +181,9 @@ class MultiShootingBVP:
                     t_span = (arc_def.t_start, arc_def.t_end)
                     state0 = states_pert[i].copy()
                     
+                    _fw = fidelity
                     result = propagate(
-                        lambda t, y, p: rf3bp_pulsating_rhs_weighted(t, y, p, fidelity),
+                        lambda t, y, _p, _fw=_fw: rf3bp_pulsating_rhs_weighted(t, y, _p, _fw),
                         state0,
                         t_span,
                         self.params,
@@ -189,7 +191,7 @@ class MultiShootingBVP:
                         rtol=self.config.integrator_rtol,
                         atol=self.config.integrator_atol,
                     )
-                    
+
                     final_state_pert = result.y[:, -1] if result.success else state0
                     residual_pert = final_state_pert - states_pert[(i + 1) % n_arcs]
                     

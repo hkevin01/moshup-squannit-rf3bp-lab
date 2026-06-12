@@ -135,7 +135,7 @@ def propagate_variational(
     method: str = "DOP853",
     rtol: float = 1e-7,
     atol: float = 1e-9,
-    max_step: float = np.inf,
+    max_step: float = 0.5,
 ) -> dict:
     """ID: RF3BP-LAB-DYN-PROP-VAR
     Requirement: Integrate variational equations to obtain state and STM history.

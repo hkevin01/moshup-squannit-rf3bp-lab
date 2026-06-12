@@ -132,7 +132,7 @@ def dilution_of_precision(cov: np.ndarray) -> dict:
     
     try:
         cond_num = np.linalg.cond(cov)
-    except:
+    except np.linalg.LinAlgError:
         cond_num = 1e12
     
     return {
