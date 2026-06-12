@@ -353,6 +353,11 @@ class MainWindow(QMainWindow):
         right = QWidget()
         right_lay = QVBoxLayout(right)
         right_lay.setContentsMargins(4, 4, 4, 4)
+        right_lay.setSpacing(0)
+
+        # Vertical splitter so the user can drag the divider between
+        # the figure tabs and the log panel - they can never overlap.
+        right_splitter = QSplitter(Qt.Vertical)
 
         self._tabs = QTabWidget()
         self._viewers: dict[str, ImageViewer] = {}
@@ -360,15 +365,21 @@ class MainWindow(QMainWindow):
             viewer = ImageViewer()
             self._viewers[fname] = viewer
             self._tabs.addTab(viewer, tab_label)
-
-        right_lay.addWidget(self._tabs, stretch=4)
+        right_splitter.addWidget(self._tabs)
 
         self._log = QPlainTextEdit()
         self._log.setReadOnly(True)
         self._log.setMaximumBlockCount(2000)
         self._log.setFont(QFont("Monospace", 9))
-        self._log.setFixedHeight(150)
-        right_lay.addWidget(self._log)
+        self._log.setMinimumHeight(80)
+        right_splitter.addWidget(self._log)
+
+        # Give tabs ~75 % of the height, log ~25 %
+        right_splitter.setStretchFactor(0, 3)
+        right_splitter.setStretchFactor(1, 1)
+        right_splitter.setSizes([580, 180])
+
+        right_lay.addWidget(right_splitter)
 
         splitter.addWidget(right)
         splitter.setStretchFactor(0, 0)
