@@ -11,6 +11,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+gui = [
+  "PyQt5>=5.15",
+]
 dev = [
   "pytest>=8.0.0",
   "ruff>=0.6.0",

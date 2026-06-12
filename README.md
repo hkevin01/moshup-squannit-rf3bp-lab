@@ -20,31 +20,77 @@ The project implements advanced astrodynamics techniques including:
 
 - Python 3.11 or newer (3.13 works fine)
 - Windows, macOS, or Linux
+- `pip` available on your PATH (comes with any standard Python installer)
 
-### Option A - Install the package (recommended)
+### Step 1 - Get the project
 
-Open a terminal / Command Prompt in the project root and run:
+```bash
+git clone https://github.com/hkevin01/moshup-squannit-rf3bp-lab.git
+cd moshup-squannit-rf3bp-lab
+```
+
+### Step 2 - Create and activate a virtual environment (recommended)
+
+**Windows (Command Prompt)**
+```cmd
+python -m venv .venv
+.venv\Scripts\activate
+```
+
+**Windows (PowerShell)**
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+```
+
+> If PowerShell blocks the activate script run this first:
+> `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`
+
+**macOS / Linux**
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+### Step 3 - Install the package and its dependencies
 
 ```bash
 pip install -e .
 ```
 
-Then run the demo:
+To also install the GUI and developer tools:
+
+```bash
+pip install -e ".[gui,dev]"
+```
+
+### Step 4 - Run
+
+**Graphical interface (no terminal needed after this):**
+
+```bash
+python scripts/gui.py
+```
+
+**Headless demo (saves figures to `docs/figures/`):**
 
 ```bash
 python scripts/run_demo.py
 ```
 
-### Option B - Run directly without installing (IDLE, Explorer double-click, etc.)
-
-No extra steps needed. The script auto-adds its own `src/` directory to `sys.path` at startup, so you can open `scripts/run_demo.py` in IDLE and press **Run** (F5) without installing anything first.
-
-### Install with dev/test extras
+**Tests:**
 
 ```bash
-pip install -e .[dev]
 python -m pytest
 ```
+
+### Tip - Run without installing (IDLE, Explorer double-click)
+
+Both `scripts/gui.py` and `scripts/run_demo.py` automatically add their own
+`src/` directory to `sys.path` at startup, so you can open either file in IDLE
+and press **Run (F5)** without installing anything first.
+Dependencies (`numpy`, `scipy`, `matplotlib`, `PyQt5`) must still be installed
+for the Python you use - run `pip install numpy scipy matplotlib PyQt5` if needed.
 
 ---
 
