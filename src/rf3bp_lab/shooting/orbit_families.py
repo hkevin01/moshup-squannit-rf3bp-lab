@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Callable, Optional
+
 """ID: RF3BP-LAB-SHOOT-FAMILIES
 Requirement: Trace bounded-orbit families via continuation in orbit parameters.
 Purpose: Enable systematic design-space exploration and trade studies.
@@ -60,7 +62,7 @@ class FamilyConfig:
     num_points: int = 20
     shooting_max_nfev: int = 6
     fidelity: FidelityWeights = FidelityWeights()
-    objective_func: callable | None = None  # Custom objective; defaults to None (no opt)
+    objective_func: Optional[Callable[..., float]] = None  # Custom objective; defaults to None (no opt)
 
 
 def _compute_orbit_energy(state: np.ndarray, p: SystemParams) -> float:

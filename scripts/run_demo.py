@@ -16,6 +16,11 @@ if str(_src) not in sys.path:
 import json
 import os
 
+# Force the non-interactive Agg backend BEFORE importing pyplot.
+# This prevents a deadlock/hang in IDLE on Windows where IDLE already
+# owns the Tkinter event loop and matplotlib would try to steal it.
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -79,7 +84,10 @@ def main() -> None:
     print(f"stage1_cost={result['stage1_cost']:.3e}, final_cost={result['stage2_cost']:.3e}")
     print(f"stages={len(stage_data)}")
 
-    out_dir = os.environ.get("OUTPUT_DIR", ".")
+    # Default to docs/figures next to the repo root so figures never land
+    # in a confusing location when run from IDLE or Explorer double-click.
+    _default_out = str(_repo_root / "docs" / "figures")
+    out_dir = os.environ.get("OUTPUT_DIR", _default_out)
     os.makedirs(out_dir, exist_ok=True)
 
     plot_trajectory(sol_cr3bp.y[:3], "CR3BP Reference Orbit")
@@ -127,7 +135,10 @@ def main() -> None:
     plt.savefig(os.path.join(out_dir, "result_snapshot_dashboard.png"), dpi=160)
     plt.close()
 
-    results_dir = os.path.join(os.path.dirname(out_dir), "results") if os.path.basename(out_dir) == "figures" else os.path.join(out_dir, "results")
+    # Build the results directory relative to the repo root, not to CWD.
+    # os.path.dirname(".")=="" on Windows which would put results in the
+    # filesystem root - use the repo-relative path unconditionally.
+    results_dir = str(_repo_root / "docs" / "results")
     os.makedirs(results_dir, exist_ok=True)
     _write_json(
         os.path.join(results_dir, "latest_demo_metrics.json"),
@@ -139,8 +150,15 @@ def main() -> None:
         },
     )
 
+    # plt.show() only works when NOT using the Agg backend.
+    # Set SHOW_PLOTS=1 only in environments with a live display (not IDLE).
     if os.environ.get("SHOW_PLOTS", "0") == "1":
-        plt.show()
+        import warnings
+        warnings.warn(
+            "SHOW_PLOTS=1 has no effect because the Agg (file-only) backend is "
+            "active.  Open the PNG files in docs/figures/ to view results.",
+            stacklevel=1,
+        )
 
     print(f"saved plots in {out_dir}")
 
