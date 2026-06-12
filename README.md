@@ -94,6 +94,82 @@ for the Python you use - run `pip install numpy scipy matplotlib PyQt5` if neede
 
 ---
 
+## Graphical Interface (GUI)
+
+The project ships a full PyQt5 GUI so you never have to touch the terminal again after the initial install.
+
+```bash
+python scripts/gui.py
+```
+
+---
+
+### Step 1 - Launch
+
+Open a terminal in the project root, activate your virtual environment, and run the command above.
+The main window opens with the parameter panel on the left and the figure viewer on the right.
+
+![GUI startup](docs/screenshots/01_startup.png)
+
+> **Left panel** - all `SystemParams` fields are shown as labelled spin-boxes with their valid ranges.
+> **Right panel** - six figure tabs (CR3BP Orbit, RF3BP Orbit, Perturbations, Convergence, Model Gap, Dashboard).
+> **Bottom** - live log output appears here while the simulation runs.
+
+---
+
+### Step 2 - Edit parameters (optional)
+
+Every physics parameter can be changed before running. Spin-boxes enforce valid ranges automatically.
+Click **Reset to defaults** at any time to restore the published Moshup-Squannit values.
+
+![Parameter reference](docs/screenshots/02_parameters.png)
+
+> The table above lists each field name, a plain-English description, valid range, and default value.
+> Changing `pulsation_e` controls how strongly the binary separation oscillates.
+> Changing `mu` shifts the mass ratio between the two bodies.
+
+---
+
+### Step 3 - Choose output folder and run
+
+Click **Browse...** next to the output directory to pick where figures are saved.
+The default is `docs/figures/` inside the project - this folder is created automatically.
+Then click **Run Demo** to start the simulation.
+
+![Output folder and run button](docs/screenshots/03_run_and_outputs.png)
+
+> **Run Demo** launches the full pipeline in a background thread - the window stays responsive.
+> **Open Figures Folder** opens the output directory in Explorer / Finder / Nautilus after the run.
+> Seven files are produced: six PNG figures and one JSON metrics file.
+
+---
+
+### Step 4 - Watch the live log
+
+While the simulation runs the log panel streams every step.
+Figure tabs turn green as each PNG is saved - you can click them immediately to inspect the result.
+
+![Live log during run](docs/screenshots/04_running_log.png)
+
+> The progress bar at the top of the figure viewer is visible until the run finishes.
+> Green tabs mark completed figures. The active tab switches automatically to each new figure as it arrives.
+> If something goes wrong an error is shown in the log and a dialog box pops up with details.
+
+---
+
+### Step 5 - Inspect the results
+
+When the run completes all six tabs are populated.
+Switch to the **Dashboard** tab for a combined summary of perturbation magnitudes, continuation progress, and model-gap metrics.
+
+![Results dashboard](docs/screenshots/05_results_dashboard.png)
+
+> The dashboard shows four panels: perturbation bar chart, continuation residual trend, RF3BP-vs-CR3BP gap indicators, and a mission snapshot with colour-coded metric cards.
+> The log at the bottom confirms where the JSON metrics file was saved.
+> Click **Open Figures Folder** to find all six PNGs for use in reports or presentations.
+
+---
+
 This repository does not try to be a CLI-heavy wrapper. The main value is the **dynamics code**, the **hierarchical shooting continuation logic**, and the **diagnostic plots** that help compare perturbation sources in the neighborhood of a binary asteroid.
 
 > [!IMPORTANT]
