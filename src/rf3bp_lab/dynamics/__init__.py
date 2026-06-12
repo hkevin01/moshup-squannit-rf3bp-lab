@@ -28,3 +28,17 @@ from .variational import (
 	covariance_at_time,
 	dilution_of_precision,
 )
+from .polyhedron_gravity import (
+	PolyhedronModel,
+	PolyhedronCache,
+	polyhedron_gravity,
+	ellipsoid_mesh,
+)
+from .sun_ephemeris import (
+	SunState,
+	SunEphemerisConfig,
+	sun_position_j2000,
+	jd_from_mission_time,
+	sun_acceleration_rf3bp,
+	default_sun_state,
+)
