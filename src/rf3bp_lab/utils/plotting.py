@@ -18,6 +18,121 @@ def plot_trajectory(states: np.ndarray, title: str = "Trajectory") -> None:
     plt.tight_layout()
 
 
+def plot_trajectory_planes(
+    states_cr3bp: np.ndarray,
+    states_rf3bp: np.ndarray,
+    title: str = "Trajectory Projections: CR3BP vs RF3BP",
+) -> None:
+    """Four-panel view: 3-D plus three 2-D plane projections, both models overlaid.
+
+    Parameters
+    ----------
+    states_cr3bp, states_rf3bp : ndarray, shape (3+, N)
+        Position rows are [x, y, z, ...].  Only the first three rows are used.
+    """
+    C1, C2 = "#1d3557", "#e76f51"   # CR3BP blue, RF3BP orange
+    fig = plt.figure(figsize=(12, 9))
+    fig.suptitle(title, fontsize=13, fontweight="bold")
+
+    # --- 3-D panel (top-left, larger) -----------------------------------------
+    ax3d = fig.add_subplot(2, 2, 1, projection="3d")
+    ax3d.plot(states_cr3bp[0], states_cr3bp[1], states_cr3bp[2],
+              lw=1.4, color=C1, label="CR3BP", alpha=0.85)
+    ax3d.plot(states_rf3bp[0], states_rf3bp[1], states_rf3bp[2],
+              lw=1.4, color=C2, label="RF3BP", alpha=0.85, linestyle="--")
+    ax3d.scatter(*states_cr3bp[:3, 0],  s=30, color=C1, marker="o", zorder=5)
+    ax3d.scatter(*states_rf3bp[:3, 0],  s=30, color=C2, marker="o", zorder=5)
+    ax3d.set_xlabel("x"); ax3d.set_ylabel("y"); ax3d.set_zlabel("z")
+    ax3d.set_title("3-D view")
+    ax3d.legend(fontsize=8)
+
+    # --- XY projection (top-right) -------------------------------------------
+    ax_xy = fig.add_subplot(2, 2, 2)
+    ax_xy.plot(states_cr3bp[0], states_cr3bp[1], lw=1.3, color=C1, label="CR3BP")
+    ax_xy.plot(states_rf3bp[0], states_rf3bp[1], lw=1.3, color=C2,
+               label="RF3BP", linestyle="--", alpha=0.9)
+    ax_xy.scatter(0, 0, s=60, color="#888", marker="+", zorder=5, label="CoM")
+    ax_xy.set_xlabel("x"); ax_xy.set_ylabel("y")
+    ax_xy.set_title("XY plane (equatorial)")
+    ax_xy.set_aspect("equal", adjustable="datalim")
+    ax_xy.grid(alpha=0.25); ax_xy.legend(fontsize=8)
+
+    # --- XZ projection (bottom-left) -----------------------------------------
+    ax_xz = fig.add_subplot(2, 2, 3)
+    ax_xz.plot(states_cr3bp[0], states_cr3bp[2], lw=1.3, color=C1, label="CR3BP")
+    ax_xz.plot(states_rf3bp[0], states_rf3bp[2], lw=1.3, color=C2,
+               label="RF3BP", linestyle="--", alpha=0.9)
+    ax_xz.set_xlabel("x"); ax_xz.set_ylabel("z")
+    ax_xz.set_title("XZ plane (out-of-plane)")
+    ax_xz.set_aspect("equal", adjustable="datalim")
+    ax_xz.grid(alpha=0.25); ax_xz.legend(fontsize=8)
+
+    # --- YZ projection (bottom-right) ----------------------------------------
+    ax_yz = fig.add_subplot(2, 2, 4)
+    ax_yz.plot(states_cr3bp[1], states_cr3bp[2], lw=1.3, color=C1, label="CR3BP")
+    ax_yz.plot(states_rf3bp[1], states_rf3bp[2], lw=1.3, color=C2,
+               label="RF3BP", linestyle="--", alpha=0.9)
+    ax_yz.set_xlabel("y"); ax_yz.set_ylabel("z")
+    ax_yz.set_title("YZ plane (meridional)")
+    ax_yz.set_aspect("equal", adjustable="datalim")
+    ax_yz.grid(alpha=0.25); ax_yz.legend(fontsize=8)
+
+    plt.tight_layout(rect=[0, 0, 1, 0.96])
+
+
+def plot_trajectory_velocity(
+    time: np.ndarray,
+    states_cr3bp: np.ndarray,
+    states_rf3bp: np.ndarray,
+    title: str = "Velocity Components Over Time",
+) -> None:
+    """Three-panel velocity time-history: vx, vy, vz for both models."""
+    C1, C2 = "#1d3557", "#e76f51"
+    labels = ["vx", "vy", "vz"]
+    fig, axes = plt.subplots(3, 1, figsize=(10, 7), sharex=True)
+    fig.suptitle(title, fontsize=12, fontweight="bold")
+    for i, (ax, lbl) in enumerate(zip(axes, labels)):
+        ax.plot(time, states_cr3bp[3 + i], lw=1.3, color=C1, label="CR3BP")
+        ax.plot(time, states_rf3bp[3 + i], lw=1.3, color=C2,
+                label="RF3BP", linestyle="--", alpha=0.9)
+        ax.set_ylabel(lbl)
+        ax.grid(alpha=0.25)
+        ax.legend(fontsize=8, loc="upper right")
+    axes[-1].set_xlabel("t (normalised)")
+    plt.tight_layout(rect=[0, 0, 1, 0.96])
+
+
+def plot_trajectory_deviation(
+    time: np.ndarray,
+    states_cr3bp: np.ndarray,
+    states_rf3bp: np.ndarray,
+    title: str = "Position Deviation: RF3BP - CR3BP",
+) -> None:
+    """Show the growing positional difference between the two models over time."""
+    delta = states_rf3bp[:3] - states_cr3bp[:3]
+    dist  = np.linalg.norm(delta, axis=0)
+
+    C_X, C_Y, C_Z, C_D = "#e63946", "#2a9d8f", "#f4a261", "#1d3557"
+    fig, (ax_comp, ax_norm) = plt.subplots(2, 1, figsize=(10, 6), sharex=True)
+    fig.suptitle(title, fontsize=12, fontweight="bold")
+
+    ax_comp.plot(time, delta[0], lw=1.2, color=C_X, label="dx")
+    ax_comp.plot(time, delta[1], lw=1.2, color=C_Y, label="dy")
+    ax_comp.plot(time, delta[2], lw=1.2, color=C_Z, label="dz")
+    ax_comp.set_ylabel("component deviation")
+    ax_comp.grid(alpha=0.25)
+    ax_comp.legend(ncol=3, fontsize=9)
+    ax_comp.axhline(0, color="#aaa", lw=0.8, linestyle=":")
+
+    ax_norm.plot(time, dist, lw=1.5, color=C_D)
+    ax_norm.fill_between(time, 0, dist, alpha=0.15, color=C_D)
+    ax_norm.set_ylabel(r"$\|\mathbf{r}_{RF3BP} - \mathbf{r}_{CR3BP}\|$")
+    ax_norm.set_xlabel("t (normalised)")
+    ax_norm.grid(alpha=0.25)
+
+    plt.tight_layout(rect=[0, 0, 1, 0.96])
+
+
 def plot_perturbation_norms(time: np.ndarray, component_norms: dict[str, np.ndarray], title: str = "Perturbation Norms") -> None:
     fig, ax = plt.subplots(figsize=(8.5, 4.8))
     for label, values in component_norms.items():

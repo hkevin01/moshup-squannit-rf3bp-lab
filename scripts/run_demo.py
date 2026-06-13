@@ -27,7 +27,11 @@ import numpy as np
 from rf3bp_lab.dynamics.models import FidelityWeights, compare_cr3bp_rf3bp, cr3bp_rhs, propagate, rf3bp_breakdown, rf3bp_pulsating_rhs
 from rf3bp_lab.dynamics.params import SystemParams
 from rf3bp_lab.shooting.hierarchical import HierarchicalShooter
-from rf3bp_lab.utils.plotting import plot_model_gap, plot_perturbation_norms, plot_result_dashboard, plot_stage_convergence, plot_trajectory
+from rf3bp_lab.utils.plotting import (
+    plot_model_gap, plot_perturbation_norms, plot_result_dashboard,
+    plot_stage_convergence, plot_trajectory,
+    plot_trajectory_planes, plot_trajectory_velocity, plot_trajectory_deviation,
+)
 
 
 def _component_norm_history(t: np.ndarray, states: np.ndarray, p: SystemParams) -> dict[str, np.ndarray]:
@@ -96,6 +100,18 @@ def main() -> None:
 
     plot_trajectory(sol_rf3bp.y[:3], "RF3BP Orbit with Pulsation + Perturbations")
     plt.savefig(os.path.join(out_dir, "trajectory_rf3bp.png"), dpi=160)
+    plt.close()
+
+    plot_trajectory_planes(sol_cr3bp.y, sol_rf3bp.y)
+    plt.savefig(os.path.join(out_dir, "trajectory_planes.png"), dpi=160)
+    plt.close()
+
+    plot_trajectory_velocity(sol_cr3bp.t, sol_cr3bp.y, sol_rf3bp.y)
+    plt.savefig(os.path.join(out_dir, "trajectory_velocity.png"), dpi=160)
+    plt.close()
+
+    plot_trajectory_deviation(sol_cr3bp.t, sol_cr3bp.y, sol_rf3bp.y)
+    plt.savefig(os.path.join(out_dir, "trajectory_deviation.png"), dpi=160)
     plt.close()
 
     perturbation = _component_norm_history(sol_rf3bp.t, sol_rf3bp.y, p)

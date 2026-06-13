@@ -88,6 +88,7 @@ class DemoWorker(QThread):
         from rf3bp_lab.utils.plotting import (
             plot_model_gap, plot_perturbation_norms,
             plot_result_dashboard, plot_stage_convergence, plot_trajectory,
+            plot_trajectory_planes, plot_trajectory_velocity, plot_trajectory_deviation,
         )
         import json
 
@@ -130,6 +131,16 @@ class DemoWorker(QThread):
 
         plot_trajectory(sol_rf3bp.y[:3], "RF3BP Orbit - Pulsation + Perturbations")
         _save("trajectory_rf3bp.png")
+
+        self._emit("Generating multi-plane and comparison plots ...")
+        plot_trajectory_planes(sol_cr3bp.y, sol_rf3bp.y)
+        _save("trajectory_planes.png")
+
+        plot_trajectory_velocity(sol_cr3bp.t, sol_cr3bp.y, sol_rf3bp.y)
+        _save("trajectory_velocity.png")
+
+        plot_trajectory_deviation(sol_cr3bp.t, sol_cr3bp.y, sol_rf3bp.y)
+        _save("trajectory_deviation.png")
 
         self._emit("Computing perturbation norms ...")
         keys = ["nonspherical", "pulsation", "solar_gravity", "srp"]
@@ -284,8 +295,11 @@ class ImageViewer(QScrollArea):
 # ---------------------------------------------------------------------------
 
 _FIG_NAMES = [
-    ("trajectory_cr3bp.png",          "CR3BP Orbit"),
-    ("trajectory_rf3bp.png",          "RF3BP Orbit"),
+    ("trajectory_cr3bp.png",          "CR3BP 3-D"),
+    ("trajectory_rf3bp.png",          "RF3BP 3-D"),
+    ("trajectory_planes.png",         "Plane Views"),
+    ("trajectory_velocity.png",       "Velocity"),
+    ("trajectory_deviation.png",      "Deviation"),
     ("perturbation_norms.png",        "Perturbations"),
     ("continuation_convergence.png",  "Convergence"),
     ("model_gap_cr3bp_vs_rf3bp.png",  "Model Gap"),
@@ -438,7 +452,6 @@ class MainWindow(QMainWindow):
         fname = os.path.basename(path)
         if fname in self._viewers:
             self._viewers[fname].load(path)
-            # Switch to that tab so the user sees results arriving live
             for i, (f, _) in enumerate(_FIG_NAMES):
                 if f == fname:
                     self._tabs.setCurrentIndex(i)
