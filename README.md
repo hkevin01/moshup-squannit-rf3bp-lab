@@ -534,13 +534,32 @@ model = create_default_harmonic_model(mu=1.0, radius=0.5, max_degree=20)
 
 **Module:** `rf3bp_lab.dynamics.advanced_gravity`
 
-Provides geometric eclipse detection and SRP attenuation:
+Provides geometric eclipse detection and SRP attenuation.
 
-- **EclipseState** dataclass: Stores boolean shadow flags, coverage fraction $f_{shadow} \in [0, 1]$, and angular radii
-- **detect_eclipse()**: Cylindrical shadow model with penumbra blending
-  - Returns `in_primary_shadow` and `in_secondary_shadow` flags
-  - Computes `shadow_fraction` for smooth attenuation near edges
-- **eclipse_aware_srp()**: Applies attenuation: $\mathbf{a}_{SRP,eclipsed} = (1 - f_{shadow}) \cdot \mathbf{a}_{SRP}$
+**`EclipseState` dataclass** - stores all shadow geometry for one timestep:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `in_primary_shadow` | `bool` | True when spacecraft is inside the primary body's shadow cone |
+| `in_secondary_shadow` | `bool` | True when spacecraft is inside the secondary body's shadow cone |
+| `shadow_fraction` | `float` | Coverage fraction $f \in [0,\,1]$ where $0$ = full sunlight, $1$ = full eclipse |
+| `angular_radius_primary` | `float` | Apparent angular radius of the primary shadow cone (radians) |
+| `angular_radius_secondary` | `float` | Apparent angular radius of the secondary shadow cone (radians) |
+
+**`detect_eclipse()`** - cylindrical shadow model with penumbra blending:
+- Computes perpendicular distance from spacecraft to each body's Sun-aligned axis
+- Sets `in_primary_shadow = True` when that distance is less than the primary radius
+- Blends `shadow_fraction` smoothly between $0$ and $1$ across the penumbra boundary
+
+**`eclipse_aware_srp()`** - attenuates the base SRP acceleration by the shadow fraction:
+
+$$
+\mathbf{a}_{\text{SRP,eclipse}} = \bigl(1 - f_{\text{shadow}}\bigr)\,\mathbf{a}_{\text{SRP}}
+$$
+
+where $f_{\text{shadow}} \in [0, 1]$ is the coverage fraction returned by `detect_eclipse()`.
+When the spacecraft is fully illuminated $f_{\text{shadow}} = 0$ and the full SRP acts.
+When fully eclipsed $f_{\text{shadow}} = 1$ and SRP is zero.
 
 #### Mission Significance
 
